@@ -1,3 +1,7 @@
 fabric-data-agent-sdk>=0.1.0
 azure-identity>=1.15
 PyYAML>=6.0
+# NOTE: fabric-data-agent-sdk pulls in azure-kusto-data, which hard-pins requests==2.32.0.
+# pip prints a "yanked version" warning for that build - this is expected and harmless.
+# Do NOT add requests>=2.32.2 here: it conflicts with the SDK pin (verified via `pip check`).
+# 2.32.0 was yanked for a packaging issue, not a vulnerability.

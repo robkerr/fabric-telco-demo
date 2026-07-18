@@ -53,10 +53,13 @@ if (-not $SkipVenv) {
     $reqGen = Join-Path $root 'data-generation\requirements.txt'
     if (Test-Path $reqGen) { & $pip install -r $reqGen }
     Write-Host "  venv ready at $venv"
+    Write-Host "  NOTE: this script cannot activate the venv in your shell. Activate it yourself" -ForegroundColor Yellow
+    Write-Host "        before running python: .\.venv\Scripts\Activate.ps1" -ForegroundColor Yellow
 }
 
 Write-Host ''
 Write-Host 'Prerequisites checked. Next:' -ForegroundColor Green
-Write-Host '  1) python ./data-generation/generate.py --customers 1000'
-Write-Host '  2) run the web app (app/README.md) for an instant local demo, or'
-Write-Host '  3) az login then ./scripts/setup_spn.ps1 to provision Fabric'
+Write-Host '  1) .\.venv\Scripts\Activate.ps1        # activate the venv (prompt shows (.venv))'
+Write-Host '  2) python ./data-generation/generate.py --customers 1000'
+Write-Host '  3) run the web app (app/README.md) for an instant local demo, or'
+Write-Host '  4) az login then ./scripts/setup_spn.ps1 to provision Fabric'

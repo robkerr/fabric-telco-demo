@@ -16,7 +16,12 @@ There are two ways to stand up Fabric:
 Copy-Item .env.example .env
 # Edit .env: FABRIC_WORKSPACE_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, AZURE_LOCATION, AZURE_RESOURCE_GROUP
 ./scripts/00_prereqs.ps1        # installs fab CLI, python venv + lightweight data-gen deps, checks az
+.\.venv\Scripts\Activate.ps1    # activate the venv (00_prereqs can't do it for your shell)
 ```
+
+> After `00_prereqs.ps1`, **activate the venv** (`.\.venv\Scripts\Activate.ps1`) before running any
+> `python` command - the script installs deps into `.venv` but can't activate it in your shell.
+> Alternatively call the venv's python directly: `.\.venv\Scripts\python.exe ...`.
 
 > `00_prereqs.ps1` installs only lightweight, cross-platform Python deps (enough to generate
 > data and run the web app). The Fabric Data Agent and semantic model are created by running

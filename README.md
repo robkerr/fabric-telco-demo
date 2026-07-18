@@ -38,6 +38,8 @@ Copy-Item .env.example .env
 
 # 2. Install tooling (az, fab CLI, python venv + lightweight data-gen deps)
 ./scripts/00_prereqs.ps1
+#    Then ACTIVATE the venv (00_prereqs can't do it for your shell):
+.\.venv\Scripts\Activate.ps1        # your prompt should now show (.venv)
 
 # 3. Generate synthetic data (default: 1000 customers) into ./data
 #    This is fully local - no Azure/Fabric needed. You can demo the web app now

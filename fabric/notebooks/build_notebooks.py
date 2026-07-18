@@ -11,7 +11,7 @@ Notebooks produced:
     01_setup_lakehouse.ipynb      - validate lakehouse + landing files
     02_load_bronze.ipynb          - raw parquet -> bronze.* Delta tables (bronze schema)
     03_build_silver_gold.ipynb    - curated dim_/fact_ tables (clean names)
-    04_ml_scores.ipynb            - churn + cross-sell gold tables + customer_360
+    04_ml_scores.ipynb            - trained churn model (MLflow) + cross-sell + customer_360
     05_create_data_agent.ipynb    - create & publish the Fabric Data Agent (run in Fabric)
 """
 from __future__ import annotations
@@ -195,63 +195,6 @@ def nb_03():
 # 04 - ML scores + customer_360
 # ----------------------------------------------------------------------------
 def nb_04():
-    churn_sql = """
-CREATE OR REPLACE TABLE ml_churn_score AS
-WITH unpaid AS (
-    SELECT account_id, COUNT(*) AS unpaid_ct
-    FROM fact_invoice WHERE paid = false GROUP BY account_id
-),
-uptime AS (
-    SELECT account_id, AVG(uptime_pct) AS avg_uptime
-    FROM fact_service_metric GROUP BY account_id
-),
-csat AS (
-    SELECT account_id, AVG(csat) AS avg_csat
-    FROM fact_feedback GROUP BY account_id
-),
-cancels AS (
-    SELECT customer_id, COUNT(*) AS cancel_ct
-    FROM fact_contact WHERE reason = 'cancel_request' GROUP BY customer_id
-),
-scored AS (
-    SELECT
-        a.customer_id, a.account_id,
-        LEAST(0.98, GREATEST(0.01,
-            0.10
-            + CASE WHEN a.status = 'suspended' THEN 0.25 ELSE 0 END
-            + LEAST(0.30, 0.10 * COALESCE(u.unpaid_ct, 0))
-            + CASE WHEN COALESCE(up.avg_uptime, 100) < 99.0 THEN 0.20 ELSE 0 END
-            + CASE WHEN COALESCE(cs.avg_csat, 5) <= 2.5 THEN 0.20 ELSE 0 END
-            + CASE WHEN COALESCE(cn.cancel_ct, 0) > 0 THEN 0.25 ELSE 0 END
-            + CASE WHEN c.tenure_months < 6 THEN 0.10
-                   WHEN c.tenure_months > 48 THEN -0.05 ELSE 0 END
-            + CASE WHEN a.autopay = false THEN 0.05 ELSE 0 END
-        )) AS churn_probability,
-        CASE
-            WHEN COALESCE(cn.cancel_ct,0) > 0 THEN 'cancellation intent'
-            WHEN a.status = 'suspended' THEN 'account suspended'
-            WHEN COALESCE(up.avg_uptime,100) < 99.0 THEN 'degraded service'
-            WHEN COALESCE(cs.avg_csat,5) <= 2.5 THEN 'low satisfaction'
-            WHEN COALESCE(u.unpaid_ct,0) > 0 THEN 'unpaid invoices'
-            WHEN c.tenure_months < 6 THEN 'new/short tenure'
-            ELSE 'stable account'
-        END AS top_reason
-    FROM dim_account a
-    JOIN dim_customer c ON a.customer_id = c.customer_id
-    LEFT JOIN unpaid u ON a.account_id = u.account_id
-    LEFT JOIN uptime up ON a.account_id = up.account_id
-    LEFT JOIN csat cs ON a.account_id = cs.account_id
-    LEFT JOIN cancels cn ON a.customer_id = cn.customer_id
-)
-SELECT customer_id, account_id,
-       ROUND(churn_probability, 3) AS churn_probability,
-       CASE WHEN churn_probability >= 0.55 THEN 'High'
-            WHEN churn_probability >= 0.30 THEN 'Medium' ELSE 'Low' END AS risk_band,
-       top_reason,
-       CURRENT_DATE() AS scored_date
-FROM scored
-""".strip()
-
     xsell_sql = """
 CREATE OR REPLACE TABLE ml_crosssell_reco AS
 WITH owned AS (
@@ -346,6 +289,34 @@ LEFT JOIN ml_churn_score ch ON c.customer_id = ch.customer_id
 LEFT JOIN ml_crosssell_reco xs ON a.account_id = xs.account_id
 """.strip()
 
+    churn_feature_sql = """
+SELECT
+  a.account_id, a.customer_id,
+  c.tenure_months,
+  CAST(a.autopay AS INT) AS autopay,
+  CASE a.credit_class WHEN 'A' THEN 0 WHEN 'B' THEN 1 ELSE 2 END AS credit_risk,
+  COALESCE(s.product_count, 0) AS product_count,
+  COALESCE(s.total_mrc, 0.0) AS total_mrc,
+  COALESCE(u.unpaid_ct, 0) AS unpaid_ct,
+  COALESCE(sm.avg_uptime, 100.0) AS avg_uptime,
+  COALESCE(sm.avg_latency, 20.0) AS avg_latency,
+  COALESCE(fb.avg_csat, 5.0) AS avg_csat,
+  COALESCE(ct.cancel_ct, 0) AS cancel_ct,
+  a.churn_label
+FROM dim_account a
+JOIN dim_customer c ON a.customer_id = c.customer_id
+LEFT JOIN (SELECT account_id, COUNT(*) AS product_count, SUM(mrc) AS total_mrc
+           FROM fact_subscription WHERE status = 'active' GROUP BY account_id) s ON a.account_id = s.account_id
+LEFT JOIN (SELECT account_id, COUNT(*) AS unpaid_ct FROM fact_invoice WHERE paid = false
+           GROUP BY account_id) u ON a.account_id = u.account_id
+LEFT JOIN (SELECT account_id, AVG(uptime_pct) AS avg_uptime, AVG(latency_ms) AS avg_latency
+           FROM fact_service_metric GROUP BY account_id) sm ON a.account_id = sm.account_id
+LEFT JOIN (SELECT account_id, AVG(csat) AS avg_csat FROM fact_feedback GROUP BY account_id) fb
+           ON a.account_id = fb.account_id
+LEFT JOIN (SELECT customer_id, COUNT(*) AS cancel_ct FROM fact_contact WHERE reason = 'cancel_request'
+           GROUP BY customer_id) ct ON a.customer_id = ct.customer_id
+""".strip()
+
     return notebook([
         md("# 04 - ML scores + Customer 360 (Gold)",
            "",
@@ -359,10 +330,74 @@ LEFT JOIN ml_crosssell_reco xs ON a.account_id = xs.account_id
         code("spark.sql('CREATE SCHEMA IF NOT EXISTS gold')",
              "spark.sql('USE gold')",
              "print('current schema:', spark.catalog.currentDatabase())"),
-        md("## Churn score (rule-based, transparent heuristic)"),
-        code("spark.sql('''" + churn_sql + "''')",
-             "print('ml_churn_score rows:', spark.table('ml_churn_score').count())",
-             "spark.sql('SELECT risk_band, COUNT(*) c FROM ml_churn_score GROUP BY risk_band').show()"),
+        md("## Churn model (trained in Fabric with MLflow)",
+           "",
+           "Trains a scikit-learn classifier on `churn_label` (the observed-churn training",
+           "target), logs it to an **MLflow experiment**, **registers it as a Fabric ML model**,",
+           "then scores every account into `gold.ml_churn_score`. This replaces the old",
+           "rule-based SQL scoring with a real train -> register -> score pipeline."),
+        code("import mlflow",
+             "import numpy as np",
+             "import pandas as pd",
+             "from sklearn.ensemble import GradientBoostingClassifier",
+             "from sklearn.model_selection import train_test_split",
+             "from sklearn.metrics import roc_auc_score",
+             "",
+             "FEATURES = ['tenure_months', 'autopay', 'credit_risk', 'product_count', 'total_mrc',",
+             "            'unpaid_ct', 'avg_uptime', 'avg_latency', 'avg_csat', 'cancel_ct']",
+             "feat = spark.sql('''" + churn_feature_sql + "''').toPandas()",
+             "X = feat[FEATURES].astype('float64')",
+             "y = feat['churn_label'].astype('int32')",
+             "print('accounts:', len(feat), '| churn rate:', round(float(y.mean()), 3))"),
+        code("mlflow.set_experiment('telco-churn')",
+             "X_tr, X_te, y_tr, y_te = train_test_split(",
+             "    X, y, test_size=0.25, random_state=42, stratify=y)",
+             "with mlflow.start_run(run_name='churn-gbc'):",
+             "    model = GradientBoostingClassifier(random_state=42)",
+             "    model.fit(X_tr, y_tr)",
+             "    auc = float(roc_auc_score(y_te, model.predict_proba(X_te)[:, 1]))",
+             "    mlflow.log_param('model_type', 'GradientBoostingClassifier')",
+             "    mlflow.log_metric('test_auc', auc)",
+             "    mlflow.sklearn.log_model(model, artifact_path='model',",
+             "                             registered_model_name='telco_churn_model')",
+             "print('Registered telco_churn_model | test AUC:', round(auc, 3))"),
+        code("# Score every account. Prefer the registered model (governance round-trip),",
+             "# else fall back to the in-memory model just trained.",
+             "proba = None",
+             "try:",
+             "    from mlflow.tracking import MlflowClient",
+             "    _vs = MlflowClient().search_model_versions(\"name='telco_churn_model'\")",
+             "    _v = max(_vs, key=lambda v: int(v.version)).version",
+             "    scorer = mlflow.sklearn.load_model(f'models:/telco_churn_model/{_v}')",
+             "    proba = scorer.predict_proba(X)[:, 1]",
+             "    print('Scored with registered model version', _v)",
+             "except Exception as ex:",
+             "    print('registry load failed, scoring with in-memory model:', ex)",
+             "    proba = model.predict_proba(X)[:, 1]",
+             "feat['churn_probability'] = np.round(proba, 3)",
+             "feat['risk_band'] = np.where(feat.churn_probability >= 0.55, 'High',",
+             "                     np.where(feat.churn_probability >= 0.30, 'Medium', 'Low'))"),
+        code("# Per-account top reason: standardized feature x model importance -> biggest risk driver.",
+             "imp = dict(zip(FEATURES, model.feature_importances_))",
+             "Z = (X - X.mean()) / X.std(ddof=0).replace(0, 1.0)",
+             "risk_dir = {'tenure_months': -1, 'autopay': -1, 'credit_risk': 1, 'product_count': -1,",
+             "            'total_mrc': 0, 'unpaid_ct': 1, 'avg_uptime': -1, 'avg_latency': 1,",
+             "            'avg_csat': -1, 'cancel_ct': 1}",
+             "labels = {'tenure_months': 'short tenure', 'autopay': 'no autopay', 'credit_risk': 'credit risk',",
+             "          'unpaid_ct': 'unpaid invoices', 'avg_uptime': 'degraded service',",
+             "          'avg_latency': 'high latency', 'avg_csat': 'low satisfaction',",
+             "          'cancel_ct': 'cancellation intent', 'product_count': 'few products'}",
+             "contrib = pd.DataFrame({f: Z[f] * risk_dir[f] * imp[f] for f in labels}, index=Z.index)",
+             "feat['top_reason'] = contrib.idxmax(axis=1).map(labels)",
+             "feat.loc[feat.risk_band == 'Low', 'top_reason'] = 'stable account'"),
+        code("from pyspark.sql import functions as F",
+             "score_df = spark.createDataFrame(",
+             "    feat[['customer_id', 'account_id', 'churn_probability', 'risk_band', 'top_reason']])",
+             "score_df = score_df.withColumn('scored_date', F.current_date())",
+             "(score_df.write.format('delta').mode('overwrite')",
+             "    .option('overwriteSchema', 'true').saveAsTable('gold.ml_churn_score'))",
+             "print('gold.ml_churn_score rows:', score_df.count())",
+             "spark.sql('SELECT risk_band, COUNT(*) c FROM gold.ml_churn_score GROUP BY risk_band ORDER BY 1').show()"),
         md("## Cross-sell recommendations (product-gap logic)"),
         code("spark.sql('''" + xsell_sql + "''')",
              "print('ml_crosssell_reco rows:', spark.table('ml_crosssell_reco').count())",

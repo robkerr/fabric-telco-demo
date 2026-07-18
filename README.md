@@ -14,7 +14,8 @@ Because we start with **no data**, the solution first generates a **synthetic te
 
 | Layer | Item | How it's created |
 |---|---|---|
-| Data | Lakehouse (Bronze/Silver/Gold Delta) + `customer_360` | Notebooks + PowerShell (Fabric REST / `fab` CLI) |
+| Data | Lakehouse (bronze/silver/gold schemas) + `customer_360` | Notebooks + PowerShell (Fabric REST / `fab` CLI) |
+| Data | **Churn ML model** (scikit-learn + MLflow, registered as a Fabric model) | `04_ml_scores` notebook |
 | Data | Semantic model + ontology | Fabric item definitions |
 | Data | Fabric **Data Agent** (MCP endpoint) | `05_create_data_agent` notebook (run in Fabric) |
 | Azure | Foundry/AI project, AI Search, Storage, App Service, Key Vault | Bicep |

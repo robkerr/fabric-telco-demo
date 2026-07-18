@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-18T18:02:26.143622+00:00",
+  "generated_at": "2026-07-18T19:59:00.870523+00:00",
   "customers": 1000,
   "seed": 42,
   "as_of_date": "2026-06-30",
@@ -29,7 +29,7 @@
     "fact_offer": 516,
     "fact_feedback": 404,
     "ml_churn_score": 1000,
-    "ml_crosssell_reco": 873
+    "ml_crosssell_reco": 872
   },
-  "total_rows": 101933
+  "total_rows": 101932
 }

@@ -25,7 +25,15 @@ Copy-Item .env.example .env
 
 ## 1. Data backend (Fabric) — PRIORITY
 
-### 1a. Create the service principal
+### 1a. Generate synthetic data (local, no cloud needed)
+```powershell
+python ./data-generation/generate.py --customers 1000
+# Output: data/csv/*.csv and data/parquet/*.parquet
+```
+This is fully local and independent of Azure/Fabric. At this point you can already run the
+web app in local mode (see [Try it instantly](#try-it-instantly-no-cloud)).
+
+### 1b. Create the service principal
 ```powershell
 az login
 ./scripts/setup_spn.ps1
@@ -33,12 +41,6 @@ az login
 This creates an SPN, grants it **Admin** on the Fabric workspace, and writes `SPN_APP_ID` / `SPN_CLIENT_SECRET` / `SPN_TENANT_ID` to `.env`.
 
 > The workspace-admin grant uses the Fabric REST API (`POST /workspaces/{id}/roleAssignments`). If it fails due to tenant policy, add the SPN manually as a workspace Admin in the Fabric UI.
-
-### 1b. Generate synthetic data
-```powershell
-python ./data-generation/generate.py --customers 1000
-# Output: data/csv/*.csv and data/parquet/*.parquet
-```
 
 ### 1c. Provision the Lakehouse + upload notebooks
 

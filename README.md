@@ -35,14 +35,19 @@ Because we start with **no data**, the solution first generates a **synthetic te
 Copy-Item .env.example .env
 #    -> set FABRIC_WORKSPACE_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, etc.
 
-# 2. Install tooling (az, fab CLI, python venv + deps)
+# 2. Install tooling (az, fab CLI, python venv + lightweight data-gen deps)
 ./scripts/00_prereqs.ps1
 
-# 3. Create a service principal and grant it admin on the workspace
-./scripts/setup_spn.ps1
-
-# 4. Generate synthetic data (default: 1000 customers) into ./data
+# 3. Generate synthetic data (default: 1000 customers) into ./data
+#    This is fully local - no Azure/Fabric needed. You can demo the web app now
+#    ("Try it instantly" below).
 python ./data-generation/generate.py --customers 1000
+
+# --- The steps below provision Fabric and require az login + your workspace ---
+
+# 4. Create a service principal and grant it admin on the workspace
+az login
+./scripts/setup_spn.ps1
 
 # 5. Provision the Lakehouse and upload notebooks into the workspace
 ./scripts/10_provision_fabric.ps1

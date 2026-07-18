@@ -108,3 +108,53 @@ teams/           Teams / M365 Copilot manifest & wiring
 - Synthetic data is committed so the Lakehouse can be seeded without regenerating; `generate.py` lets you regenerate or scale up.
 
 See [`docs/handoff.md`](docs/handoff.md) for a new-developer orientation.
+
+## Reset to a clean slate (start-from-scratch testing)
+
+The provisioning scripts are idempotent and **reuse** existing items (Lakehouse, notebooks,
+service principal, data agent) when they find them. To force a truly clean run so nothing is
+skipped, reset these before rerunning (Windows PowerShell, from the repo root):
+
+**1. Local Python environment**
+```powershell
+deactivate                              # only if your prompt shows (.venv); ignore any error
+Remove-Item -Recurse -Force .venv       # 00_prereqs.ps1 recreates it
+```
+
+**2. Local `.env` (clear stale IDs so scripts don't reuse old resources)**
+```powershell
+Copy-Item .env.example .env -Force
+# then re-enter your inputs in .env:
+#   FABRIC_WORKSPACE_ID   = <your NEW workspace id>
+#   AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, AZURE_LOCATION, AZURE_RESOURCE_GROUP
+#   FABRIC_LAKEHOUSE_NAME = <e.g. lh_telco>   (no spaces)
+# Leave SPN_*, FABRIC_LAKEHOUSE_ID, DATA_AGENT_*, FOUNDRY_*, AI_SEARCH_*, APP_SERVICE_NAME,
+# KEY_VAULT_NAME blank - the scripts repopulate them.
+```
+Recreating `.env` from the template is the safest step: a leftover `FABRIC_LAKEHOUSE_ID`,
+`SPN_APP_ID`, or `DATA_AGENT_ARTIFACT_ID` is exactly what makes a script "skip" creating something.
+
+**3. Fabric workspace** — delete the whole **workspace** (cleanest), or delete these items
+individually: the **Lakehouse**, the `01`-`05` **notebooks**, the **Data Agent**, and any
+**semantic model**. If you create a new workspace, put its id in `FABRIC_WORKSPACE_ID`.
+
+**4. Entra service principal** — delete the app registration (this also removes its service
+principal + secret):
+```powershell
+$appId = (Get-Content .env | Where-Object { $_ -match '^SPN_APP_ID=' }) -replace '^SPN_APP_ID=',''
+if ($appId) { az ad app delete --id $appId }   # or delete 'sp-telco-fabric-demo' in the Entra portal
+```
+> Deleting before you blank `SPN_APP_ID` in step 2. The soft-deleted app sits in
+> **Entra ID -> App registrations -> Deleted applications** for 30 days; a new app with the same
+> name is fine (names aren't unique). Purge it there if you want it gone immediately.
+
+**5. Azure infrastructure (only if you ran Phase 2 / `infra/deploy.ps1`)**
+```powershell
+az group delete --name <AZURE_RESOURCE_GROUP> --yes --no-wait
+```
+
+**6. (Optional) regenerate data** - the sample data is committed, so this is only needed if you
+changed the generator: `python ./data-generation/generate.py --customers 1000`.
+
+Then rerun from the [Quickstart](#quickstart): `00_prereqs.ps1` -> generate data -> `setup_spn.ps1`
+-> `10_provision_fabric.ps1` -> `20_load_data.ps1` -> `verify_customer360.ps1` -> the `05` notebook.

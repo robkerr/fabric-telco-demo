@@ -15,8 +15,13 @@ There are two ways to stand up Fabric:
 ```powershell
 Copy-Item .env.example .env
 # Edit .env: FABRIC_WORKSPACE_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, AZURE_LOCATION, AZURE_RESOURCE_GROUP
-./scripts/00_prereqs.ps1        # installs fab CLI, python venv + deps, checks az
+./scripts/00_prereqs.ps1        # installs fab CLI, python venv + lightweight data-gen deps, checks az
 ```
+
+> By default `00_prereqs.ps1` installs only the lightweight data-generation deps (enough to
+> generate data and run the web app). The Fabric Data Agent / semantic-model SDKs are heavy and
+> are installed on demand by their own scripts, or you can add `-IncludeFabricSdk`. See
+> [Troubleshooting](#troubleshooting) if you hit a Windows path-length error.
 
 ## 1. Data backend (Fabric) — PRIORITY
 
@@ -107,3 +112,38 @@ cd app; ../.venv/Scripts/python -m uvicorn main:app --port 8000
 - Re-run `generate.py` to rebuild data (idempotent; seeded).
 - Re-run any provisioning script — all are idempotent and will update-in-place.
 - Delete the Lakehouse in the workspace to start data fresh, then re-run 1c.
+
+## Troubleshooting
+
+### Windows path-length error installing the Fabric Data Agent SDK
+
+Symptom (during `00_prereqs.ps1 -IncludeFabricSdk` or `30_create_data_agent.ps1`):
+
+```
+ERROR: Could not install packages due to an OSError: [Errno 2] No such file or directory:
+ '...\.venv\share\jupyter\labextensions\@jupyter-widgets\...<very long filename>.js'
+```
+
+Cause: `fabric-data-agent-sdk` pulls in `semantic-link-labs` -> `jupyterlab`/`ipywidgets`, whose
+extension asset files exceed the Windows 260-character path limit (made worse by a long repo path).
+
+Fixes (pick one):
+
+1. **Enable long paths (recommended, one-time).** In an elevated PowerShell:
+   ```powershell
+   New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
+       -Name LongPathsEnabled -Value 1 -PropertyType DWORD -Force
+   ```
+   Restart your shell, then re-run the script. (`git config --system core.longpaths true` also helps git.)
+
+2. **Run the SDK steps inside a Fabric notebook.** The Data Agent and semantic-model SDKs are
+   preinstalled in Fabric. Upload `fabric/data-agent/create_data_agent.py` /
+   `fabric/semantic-model/create_semantic_model.py` into a notebook and run them there — no local
+   install needed. The rest of the pipeline (data generation, Lakehouse provisioning, notebooks,
+   web app) does not need these SDKs.
+
+3. **Use a shorter repo path.** Cloning to e.g. `C:\src\telco` leaves more headroom under the
+   260-char limit.
+
+The lightweight `00_prereqs.ps1` default (data-generation deps only) does **not** hit this issue,
+so you can generate data and run the web app without any of the above.

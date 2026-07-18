@@ -33,9 +33,14 @@ foreach ($name in $order) {
     if (-not $nb) { throw "Notebook '$name' not found in workspace. Re-run 10_provision_fabric.ps1." }
 
     Write-Host "== Running $name ==" -ForegroundColor Cyan
+    # defaultLakehouse MUST be nested under executionData.configuration (not directly
+    # under executionData) or Fabric ignores it and relative Files/ paths won't resolve.
     $body = @{
         executionData = @{
-            defaultLakehouse = @{ name = $lhName; id = $lakehouseId; workspaceId = $ws }
+            configuration = @{
+                defaultLakehouse = @{ name = $lhName; id = $lakehouseId; workspaceId = $ws }
+                useStarterPool   = $true
+            }
         }
     }
     $uri = "$($env.FABRIC_API_BASE)/workspaces/$ws/items/$($nb.id)/jobs/instances?jobType=RunNotebook"

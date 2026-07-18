@@ -1,0 +1,61 @@
+geo_id,zip,city,state,region,latitude,longitude,urban_flag
+GEO000001,93026,Portland,OR,West,40.37,-91.29,False
+GEO000002,77027,Kansas City,MO,Midwest,35.84,-87.61,False
+GEO000003,42997,Minneapolis,MN,Midwest,38.0,-119.27,True
+GEO000004,97074,Miami,FL,South,42.59,-100.71,True
+GEO000005,46976,Miami,FL,South,39.6,-121.67,False
+GEO000006,39323,New York,NY,Northeast,37.73,-96.34,True
+GEO000007,91497,Portland,OR,West,37.86,-105.53,True
+GEO000008,43341,Columbus,OH,Midwest,31.99,-115.91,True
+GEO000009,16870,Phoenix,AZ,West,25.71,-118.21,False
+GEO000010,52259,Portland,OR,West,35.04,-91.09,True
+GEO000011,81610,Nashville,TN,South,29.94,-114.45,False
+GEO000012,27052,Pittsburgh,PA,Northeast,34.4,-72.19,True
+GEO000013,51664,Detroit,MI,Midwest,44.63,-91.46,True
+GEO000014,21692,Detroit,MI,Midwest,30.38,-104.58,False
+GEO000015,71782,Detroit,MI,Midwest,26.34,-90.91,True
+GEO000016,52812,Kansas City,MO,Midwest,31.47,-122.72,True
+GEO000017,39717,Charlotte,NC,South,31.75,-70.32,True
+GEO000018,30421,San Jose,CA,West,40.22,-96.99,False
+GEO000019,60804,Boston,MA,Northeast,37.81,-80.17,True
+GEO000020,70282,Miami,FL,South,43.03,-119.37,True
+GEO000021,94626,Charlotte,NC,South,40.28,-96.75,False
+GEO000022,49343,Houston,TX,South,34.35,-96.52,False
+GEO000023,24461,Denver,CO,West,43.72,-71.48,True
+GEO000024,84940,Philadelphia,PA,Northeast,28.84,-91.98,True
+GEO000025,66678,Kansas City,MO,Midwest,25.52,-97.48,True
+GEO000026,73023,Minneapolis,MN,Midwest,27.07,-109.05,True
+GEO000027,18750,Atlanta,GA,South,41.61,-105.43,True
+GEO000028,38112,Boston,MA,Northeast,35.62,-94.84,True
+GEO000029,79105,Nashville,TN,South,28.71,-99.42,True
+GEO000030,84902,Miami,FL,South,36.52,-122.79,True
+GEO000031,49169,Miami,FL,South,28.5,-77.73,True
+GEO000032,82427,Phoenix,AZ,West,41.02,-73.81,True
+GEO000033,85751,Portland,OR,West,35.26,-116.15,True
+GEO000034,44872,Nashville,TN,South,33.76,-92.97,False
+GEO000035,90826,New York,NY,Northeast,31.93,-117.92,False
+GEO000036,35949,Portland,OR,West,39.5,-86.35,False
+GEO000037,31559,New York,NY,Northeast,33.32,-108.25,True
+GEO000038,71423,Boston,MA,Northeast,27.02,-87.07,True
+GEO000039,67307,Austin,TX,South,27.71,-83.29,False
+GEO000040,22577,Minneapolis,MN,Midwest,47.12,-80.96,True
+GEO000041,84945,Denver,CO,West,45.9,-117.97,True
+GEO000042,27991,Detroit,MI,Midwest,41.09,-72.7,True
+GEO000043,82440,Columbus,OH,Midwest,31.12,-111.11,True
+GEO000044,10662,Houston,TX,South,47.29,-121.9,False
+GEO000045,81715,Portland,OR,West,42.91,-92.93,True
+GEO000046,80822,Pittsburgh,PA,Northeast,41.49,-103.23,False
+GEO000047,80232,Miami,FL,South,35.34,-77.53,True
+GEO000048,69835,New York,NY,Northeast,31.26,-78.74,True
+GEO000049,52440,Columbus,OH,Midwest,27.22,-106.24,True
+GEO000050,73464,Kansas City,MO,Midwest,45.76,-70.64,True
+GEO000051,34940,Detroit,MI,Midwest,35.48,-107.71,True
+GEO000052,80264,Phoenix,AZ,West,29.65,-95.16,True
+GEO000053,60007,Houston,TX,South,32.04,-109.67,False
+GEO000054,51301,Miami,FL,South,38.32,-71.58,True
+GEO000055,55504,Charlotte,NC,South,29.07,-114.78,False
+GEO000056,61186,Seattle,WA,West,44.7,-121.49,False
+GEO000057,13353,Nashville,TN,South,42.45,-99.63,True
+GEO000058,22581,Denver,CO,West,41.55,-68.43,False
+GEO000059,32093,Detroit,MI,Midwest,34.94,-74.07,True
+GEO000060,20307,Columbus,OH,Midwest,39.43,-82.08,True

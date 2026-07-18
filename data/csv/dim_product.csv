@@ -1,0 +1,5 @@
+product_id,name,category,monthly_price
+PROD_INT,Home Internet,internet,0.0
+PROD_MOB,Mobile,mobile,0.0
+PROD_VOICE,Home Phone,voice,25.0
+PROD_TV,Streaming TV,tv,45.0

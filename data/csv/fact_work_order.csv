@@ -1,0 +1,457 @@
+work_order_id,account_id,type,opened_date,closed_date,status,priority,resolution
+WO0000001,ACCT000002,Install,2026-03-08,2026-03-12,closed,Medium,Truck roll - fixed
+WO0000002,ACCT000003,Install,2026-06-21,2026-06-22,closed,Medium,Customer educated
+WO0000003,ACCT000010,Install,2024-09-29,2024-10-08,closed,Low,Truck roll - fixed
+WO0000004,ACCT000011,Repair,2026-06-10,2026-06-12,closed,Medium,Truck roll - fixed
+WO0000005,ACCT000011,Upgrade,2026-06-18,2026-06-27,closed,High,Replaced equipment
+WO0000006,ACCT000012,Install,2026-02-01,2026-02-02,closed,Medium,Resolved remotely
+WO0000007,ACCT000019,Install,2024-10-29,2024-11-02,closed,Low,Customer educated
+WO0000008,ACCT000021,Repair,2024-09-08,2024-09-09,closed,Low,Resolved remotely
+WO0000009,ACCT000021,Upgrade,2025-10-21,2025-10-24,closed,High,Replaced equipment
+WO0000010,ACCT000024,Repair,2024-11-26,,open,Low,
+WO0000011,ACCT000024,Repair,2025-05-27,2025-05-29,closed,High,Replaced equipment
+WO0000012,ACCT000027,Disconnect,2026-06-15,,open,Low,
+WO0000013,ACCT000027,Install,2026-06-17,2026-06-20,closed,Medium,Truck roll - fixed
+WO0000014,ACCT000029,Repair,2024-09-05,,open,High,
+WO0000015,ACCT000033,Install,2025-08-24,,open,High,
+WO0000016,ACCT000033,Disconnect,2024-02-06,,open,Low,
+WO0000017,ACCT000034,Install,2026-06-13,2026-06-16,closed,Low,Replaced equipment
+WO0000018,ACCT000036,Upgrade,2025-02-02,2025-02-03,closed,Medium,Replaced equipment
+WO0000019,ACCT000038,Repair,2026-06-27,2026-06-27,closed,Low,Truck roll - fixed
+WO0000020,ACCT000038,Install,2026-06-06,2026-06-09,closed,Low,Replaced equipment
+WO0000021,ACCT000040,Repair,2024-10-18,2024-10-22,closed,Low,Replaced equipment
+WO0000022,ACCT000041,Install,2026-02-07,2026-02-09,closed,Low,Resolved remotely
+WO0000023,ACCT000041,Repair,2026-01-05,2026-01-07,closed,Low,Truck roll - fixed
+WO0000024,ACCT000047,Repair,2025-02-07,2025-02-10,closed,High,Resolved remotely
+WO0000025,ACCT000048,Install,2026-04-08,2026-04-08,closed,Low,Replaced equipment
+WO0000026,ACCT000048,Disconnect,2026-02-13,,open,Low,
+WO0000027,ACCT000051,Disconnect,2026-06-15,2026-06-17,closed,Medium,Customer educated
+WO0000028,ACCT000051,Disconnect,2026-05-30,,open,Low,
+WO0000029,ACCT000056,Install,2024-11-17,2024-11-18,closed,High,Replaced equipment
+WO0000030,ACCT000057,Upgrade,2025-08-24,2025-08-30,closed,High,Replaced equipment
+WO0000031,ACCT000061,Install,2026-02-23,,open,Low,
+WO0000032,ACCT000061,Upgrade,2025-11-13,2025-11-14,closed,Low,Truck roll - fixed
+WO0000033,ACCT000062,Repair,2026-04-18,2026-04-18,closed,Low,Resolved remotely
+WO0000034,ACCT000062,Repair,2024-10-03,2024-10-03,closed,Medium,Customer educated
+WO0000035,ACCT000068,Install,2026-03-11,2026-03-11,closed,Low,Customer educated
+WO0000036,ACCT000069,Install,2024-02-02,2024-02-02,closed,High,Truck roll - fixed
+WO0000037,ACCT000078,Upgrade,2026-06-05,2026-06-14,closed,Medium,Replaced equipment
+WO0000038,ACCT000079,Repair,2026-04-01,2026-04-06,closed,Medium,Replaced equipment
+WO0000039,ACCT000079,Install,2026-03-11,2026-03-15,closed,High,Customer educated
+WO0000040,ACCT000081,Upgrade,2026-03-14,,open,Low,
+WO0000041,ACCT000081,Upgrade,2024-10-17,2024-10-21,closed,Low,Replaced equipment
+WO0000042,ACCT000082,Install,2024-08-29,2024-09-07,closed,Low,Resolved remotely
+WO0000043,ACCT000082,Repair,2026-04-18,2026-04-20,closed,Low,Resolved remotely
+WO0000044,ACCT000085,Upgrade,2025-09-21,2025-09-26,closed,Low,Truck roll - fixed
+WO0000045,ACCT000085,Install,2025-10-06,2025-10-11,closed,Low,Replaced equipment
+WO0000046,ACCT000086,Install,2026-03-29,2026-04-07,closed,Medium,Customer educated
+WO0000047,ACCT000087,Disconnect,2026-06-29,2026-07-02,closed,Medium,Replaced equipment
+WO0000048,ACCT000093,Repair,2025-08-07,2025-08-07,closed,Low,Truck roll - fixed
+WO0000049,ACCT000096,Disconnect,2025-04-03,2025-04-07,closed,Low,Replaced equipment
+WO0000050,ACCT000096,Upgrade,2025-08-12,,open,Low,
+WO0000051,ACCT000098,Upgrade,2026-06-18,,open,Low,
+WO0000052,ACCT000098,Disconnect,2026-06-22,,open,Medium,
+WO0000053,ACCT000100,Repair,2025-09-13,2025-09-15,closed,Low,Resolved remotely
+WO0000054,ACCT000106,Repair,2026-03-13,2026-03-18,closed,Low,Resolved remotely
+WO0000055,ACCT000106,Install,2026-01-10,2026-01-18,closed,Low,Truck roll - fixed
+WO0000056,ACCT000107,Disconnect,2026-01-03,2026-01-09,closed,Low,Truck roll - fixed
+WO0000057,ACCT000109,Upgrade,2022-01-25,2022-01-25,closed,High,Replaced equipment
+WO0000058,ACCT000109,Repair,2024-04-28,2024-05-05,closed,Low,Replaced equipment
+WO0000059,ACCT000116,Repair,2023-11-09,,open,Low,
+WO0000060,ACCT000121,Repair,2025-07-29,2025-07-31,closed,High,Replaced equipment
+WO0000061,ACCT000121,Repair,2025-08-27,,open,Low,
+WO0000062,ACCT000128,Repair,2026-06-28,2026-07-02,closed,High,Resolved remotely
+WO0000063,ACCT000134,Repair,2026-03-18,2026-03-20,closed,Low,Replaced equipment
+WO0000064,ACCT000140,Repair,2026-03-13,2026-03-17,closed,Medium,Replaced equipment
+WO0000065,ACCT000141,Upgrade,2025-01-28,2025-02-05,closed,Low,Replaced equipment
+WO0000066,ACCT000145,Repair,2026-06-01,2026-06-04,closed,Low,Truck roll - fixed
+WO0000067,ACCT000147,Repair,2022-05-01,2022-05-04,closed,Low,Customer educated
+WO0000068,ACCT000149,Repair,2025-02-21,2025-02-26,closed,Medium,Customer educated
+WO0000069,ACCT000149,Upgrade,2024-06-15,2024-06-17,closed,High,Truck roll - fixed
+WO0000070,ACCT000162,Repair,2024-10-21,2024-10-25,closed,High,Customer educated
+WO0000071,ACCT000162,Repair,2025-05-19,,open,Medium,
+WO0000072,ACCT000164,Repair,2026-06-18,2026-06-25,closed,Low,Resolved remotely
+WO0000073,ACCT000165,Upgrade,2026-03-05,2026-03-07,closed,High,Resolved remotely
+WO0000074,ACCT000165,Repair,2026-05-28,,open,Low,
+WO0000075,ACCT000171,Upgrade,2025-10-01,2025-10-02,closed,Medium,Resolved remotely
+WO0000076,ACCT000172,Install,2023-05-30,2023-05-30,closed,High,Replaced equipment
+WO0000077,ACCT000186,Repair,2024-08-14,2024-08-15,closed,Medium,Resolved remotely
+WO0000078,ACCT000186,Repair,2023-05-09,,open,Low,
+WO0000079,ACCT000193,Disconnect,2026-03-31,2026-04-04,closed,Low,Customer educated
+WO0000080,ACCT000193,Upgrade,2025-12-30,2026-01-08,closed,Medium,Replaced equipment
+WO0000081,ACCT000197,Install,2025-04-19,2025-04-22,closed,Low,Resolved remotely
+WO0000082,ACCT000198,Repair,2024-11-19,2024-11-21,closed,Low,Truck roll - fixed
+WO0000083,ACCT000202,Install,2026-04-21,2026-04-25,closed,Low,Resolved remotely
+WO0000084,ACCT000204,Disconnect,2025-03-16,2025-03-23,closed,Low,Customer educated
+WO0000085,ACCT000204,Install,2026-02-11,2026-02-18,closed,Medium,Customer educated
+WO0000086,ACCT000209,Repair,2025-06-08,2025-06-16,closed,Low,Customer educated
+WO0000087,ACCT000210,Repair,2026-05-22,2026-05-23,closed,Medium,Resolved remotely
+WO0000088,ACCT000212,Upgrade,2025-12-17,2025-12-18,closed,Low,Customer educated
+WO0000089,ACCT000213,Install,2025-02-07,,open,Medium,
+WO0000090,ACCT000214,Install,2026-05-31,2026-06-04,closed,Medium,Truck roll - fixed
+WO0000091,ACCT000214,Install,2026-06-01,2026-06-05,closed,Low,Customer educated
+WO0000092,ACCT000216,Repair,2025-02-16,2025-02-23,closed,High,Resolved remotely
+WO0000093,ACCT000219,Install,2026-06-24,2026-07-01,closed,Low,Resolved remotely
+WO0000094,ACCT000219,Repair,2026-06-11,2026-06-19,closed,High,Truck roll - fixed
+WO0000095,ACCT000222,Repair,2025-10-20,2025-10-27,closed,Medium,Resolved remotely
+WO0000096,ACCT000222,Install,2025-06-06,2025-06-06,closed,Medium,Truck roll - fixed
+WO0000097,ACCT000224,Repair,2025-11-27,2025-12-01,closed,High,Truck roll - fixed
+WO0000098,ACCT000224,Repair,2025-10-11,2025-10-12,closed,Low,Replaced equipment
+WO0000099,ACCT000226,Repair,2025-12-28,2026-01-06,closed,Medium,Replaced equipment
+WO0000100,ACCT000228,Install,2025-09-10,2025-09-17,closed,Medium,Truck roll - fixed
+WO0000101,ACCT000229,Install,2026-06-26,,open,Medium,
+WO0000102,ACCT000231,Repair,2024-09-25,,open,Medium,
+WO0000103,ACCT000231,Repair,2023-10-22,2023-10-27,closed,High,Replaced equipment
+WO0000104,ACCT000232,Repair,2025-11-20,2025-11-20,closed,Medium,Resolved remotely
+WO0000105,ACCT000232,Disconnect,2025-12-23,2025-12-23,closed,Low,Replaced equipment
+WO0000106,ACCT000233,Upgrade,2025-04-28,,open,Medium,
+WO0000107,ACCT000236,Repair,2022-07-05,2022-07-08,closed,High,Resolved remotely
+WO0000108,ACCT000237,Upgrade,2026-01-11,2026-01-11,closed,Low,Customer educated
+WO0000109,ACCT000238,Install,2026-06-28,2026-06-30,closed,Low,Truck roll - fixed
+WO0000110,ACCT000239,Repair,2025-08-20,2025-08-27,closed,Low,Resolved remotely
+WO0000111,ACCT000239,Repair,2025-02-24,,open,Medium,
+WO0000112,ACCT000240,Repair,2025-12-02,2025-12-03,closed,Low,Resolved remotely
+WO0000113,ACCT000240,Upgrade,2025-08-20,2025-08-29,closed,Medium,Truck roll - fixed
+WO0000114,ACCT000243,Disconnect,2025-05-04,2025-05-06,closed,Medium,Truck roll - fixed
+WO0000115,ACCT000247,Install,2025-06-25,2025-07-04,closed,Low,Resolved remotely
+WO0000116,ACCT000254,Repair,2022-08-10,2022-08-10,closed,Low,Resolved remotely
+WO0000117,ACCT000255,Disconnect,2024-10-08,2024-10-09,closed,Medium,Truck roll - fixed
+WO0000118,ACCT000258,Upgrade,2025-09-05,,open,Medium,
+WO0000119,ACCT000258,Repair,2026-01-13,2026-01-14,closed,Low,Customer educated
+WO0000120,ACCT000260,Repair,2025-12-10,,open,Low,
+WO0000121,ACCT000270,Repair,2021-01-31,2021-02-02,closed,Low,Truck roll - fixed
+WO0000122,ACCT000270,Repair,2023-12-29,2023-12-29,closed,Low,Replaced equipment
+WO0000123,ACCT000271,Upgrade,2025-12-17,2025-12-26,closed,Medium,Truck roll - fixed
+WO0000124,ACCT000272,Install,2026-06-20,2026-06-21,closed,Low,Replaced equipment
+WO0000125,ACCT000272,Repair,2026-06-22,2026-07-01,closed,Low,Customer educated
+WO0000126,ACCT000275,Repair,2026-02-18,2026-02-21,closed,Low,Customer educated
+WO0000127,ACCT000276,Repair,2026-01-17,2026-01-24,closed,High,Truck roll - fixed
+WO0000128,ACCT000276,Install,2024-03-13,2024-03-19,closed,Medium,Customer educated
+WO0000129,ACCT000279,Disconnect,2026-01-08,2026-01-11,closed,High,Customer educated
+WO0000130,ACCT000280,Install,2025-04-19,2025-04-19,closed,Medium,Truck roll - fixed
+WO0000131,ACCT000280,Install,2024-02-05,,open,Low,
+WO0000132,ACCT000281,Install,2026-06-22,,open,Low,
+WO0000133,ACCT000282,Install,2025-11-12,2025-11-18,closed,Low,Customer educated
+WO0000134,ACCT000282,Repair,2026-03-21,,open,Medium,
+WO0000135,ACCT000283,Repair,2025-08-21,2025-08-25,closed,Low,Resolved remotely
+WO0000136,ACCT000288,Install,2024-12-03,2024-12-08,closed,Low,Replaced equipment
+WO0000137,ACCT000290,Install,2026-03-26,2026-04-02,closed,High,Truck roll - fixed
+WO0000138,ACCT000294,Repair,2025-12-18,2025-12-26,closed,Low,Replaced equipment
+WO0000139,ACCT000295,Install,2026-05-20,2026-05-28,closed,Medium,Truck roll - fixed
+WO0000140,ACCT000295,Upgrade,2026-06-08,,open,Low,
+WO0000141,ACCT000296,Upgrade,2025-07-31,2025-08-07,closed,Low,Replaced equipment
+WO0000142,ACCT000297,Disconnect,2026-06-29,2026-06-30,closed,Low,Resolved remotely
+WO0000143,ACCT000297,Repair,2026-06-27,2026-06-27,closed,High,Resolved remotely
+WO0000144,ACCT000299,Repair,2023-10-21,2023-10-28,closed,Medium,Customer educated
+WO0000145,ACCT000301,Install,2026-04-14,2026-04-16,closed,Low,Resolved remotely
+WO0000146,ACCT000302,Repair,2026-03-16,2026-03-17,closed,Low,Customer educated
+WO0000147,ACCT000302,Install,2026-01-19,2026-01-21,closed,Low,Resolved remotely
+WO0000148,ACCT000309,Repair,2024-07-03,2024-07-07,closed,Low,Resolved remotely
+WO0000149,ACCT000310,Install,2026-03-16,2026-03-23,closed,Medium,Customer educated
+WO0000150,ACCT000310,Repair,2026-05-17,2026-05-17,closed,Medium,Truck roll - fixed
+WO0000151,ACCT000313,Install,2025-01-23,2025-01-24,closed,Medium,Customer educated
+WO0000152,ACCT000315,Install,2025-12-24,2025-12-28,closed,High,Replaced equipment
+WO0000153,ACCT000315,Repair,2024-09-20,2024-09-28,closed,Low,Truck roll - fixed
+WO0000154,ACCT000323,Install,2025-03-30,2025-03-30,closed,High,Resolved remotely
+WO0000155,ACCT000323,Disconnect,2024-10-22,2024-10-23,closed,High,Truck roll - fixed
+WO0000156,ACCT000330,Install,2025-02-24,,open,Medium,
+WO0000157,ACCT000330,Repair,2026-01-15,2026-01-23,closed,Low,Customer educated
+WO0000158,ACCT000331,Upgrade,2025-06-01,2025-06-10,closed,Low,Truck roll - fixed
+WO0000159,ACCT000331,Install,2023-11-15,2023-11-21,closed,High,Resolved remotely
+WO0000160,ACCT000339,Repair,2026-06-15,2026-06-20,closed,Medium,Customer educated
+WO0000161,ACCT000340,Install,2025-07-16,2025-07-21,closed,High,Customer educated
+WO0000162,ACCT000345,Repair,2026-06-14,2026-06-14,closed,High,Truck roll - fixed
+WO0000163,ACCT000352,Repair,2026-03-22,2026-03-26,closed,Low,Resolved remotely
+WO0000164,ACCT000352,Repair,2026-03-10,2026-03-10,closed,Low,Replaced equipment
+WO0000165,ACCT000354,Repair,2025-08-14,2025-08-20,closed,Low,Truck roll - fixed
+WO0000166,ACCT000354,Repair,2023-09-19,2023-09-22,closed,Low,Customer educated
+WO0000167,ACCT000355,Upgrade,2026-06-11,2026-06-19,closed,Medium,Resolved remotely
+WO0000168,ACCT000372,Install,2025-06-11,2025-06-15,closed,Low,Truck roll - fixed
+WO0000169,ACCT000374,Repair,2024-04-05,,open,High,
+WO0000170,ACCT000375,Repair,2026-06-21,2026-06-25,closed,Low,Resolved remotely
+WO0000171,ACCT000386,Repair,2025-07-03,2025-07-11,closed,Medium,Resolved remotely
+WO0000172,ACCT000391,Disconnect,2022-06-30,2022-06-30,closed,High,Truck roll - fixed
+WO0000173,ACCT000391,Repair,2025-09-06,2025-09-07,closed,Medium,Replaced equipment
+WO0000174,ACCT000394,Repair,2022-10-25,,open,Low,
+WO0000175,ACCT000395,Repair,2025-06-11,2025-06-13,closed,Low,Customer educated
+WO0000176,ACCT000395,Upgrade,2026-05-10,2026-05-12,closed,Low,Replaced equipment
+WO0000177,ACCT000398,Repair,2025-12-04,2025-12-07,closed,Medium,Resolved remotely
+WO0000178,ACCT000399,Repair,2026-06-14,2026-06-22,closed,Medium,Replaced equipment
+WO0000179,ACCT000399,Repair,2026-03-03,2026-03-09,closed,Medium,Resolved remotely
+WO0000180,ACCT000404,Repair,2026-06-18,2026-06-23,closed,Medium,Replaced equipment
+WO0000181,ACCT000405,Repair,2025-01-08,2025-01-15,closed,Medium,Replaced equipment
+WO0000182,ACCT000405,Install,2024-02-11,,open,Medium,
+WO0000183,ACCT000408,Repair,2026-03-02,2026-03-02,closed,Medium,Replaced equipment
+WO0000184,ACCT000409,Upgrade,2025-11-04,2025-11-10,closed,Low,Resolved remotely
+WO0000185,ACCT000413,Install,2026-01-17,2026-01-19,closed,Low,Customer educated
+WO0000186,ACCT000414,Repair,2024-10-16,2024-10-20,closed,Low,Replaced equipment
+WO0000187,ACCT000426,Install,2025-07-17,,open,Medium,
+WO0000188,ACCT000426,Repair,2026-06-16,2026-06-17,closed,Medium,Replaced equipment
+WO0000189,ACCT000437,Repair,2026-06-22,2026-06-30,closed,Low,Truck roll - fixed
+WO0000190,ACCT000442,Install,2022-11-28,,open,Low,
+WO0000191,ACCT000442,Disconnect,2023-02-06,2023-02-10,closed,Medium,Customer educated
+WO0000192,ACCT000446,Install,2024-04-25,2024-04-27,closed,Low,Truck roll - fixed
+WO0000193,ACCT000446,Repair,2025-05-20,2025-05-22,closed,Low,Resolved remotely
+WO0000194,ACCT000448,Install,2026-05-11,2026-05-20,closed,Low,Resolved remotely
+WO0000195,ACCT000448,Repair,2026-02-11,2026-02-15,closed,Medium,Resolved remotely
+WO0000196,ACCT000450,Repair,2022-11-13,2022-11-13,closed,Low,Resolved remotely
+WO0000197,ACCT000450,Upgrade,2025-04-12,2025-04-12,closed,Medium,Truck roll - fixed
+WO0000198,ACCT000452,Install,2026-01-27,2026-02-05,closed,Medium,Replaced equipment
+WO0000199,ACCT000452,Disconnect,2025-02-13,2025-02-13,closed,Low,Resolved remotely
+WO0000200,ACCT000453,Install,2025-09-20,2025-09-23,closed,Medium,Replaced equipment
+WO0000201,ACCT000453,Repair,2025-03-29,2025-04-04,closed,Low,Resolved remotely
+WO0000202,ACCT000455,Install,2026-06-13,2026-06-18,closed,High,Resolved remotely
+WO0000203,ACCT000459,Repair,2026-06-29,2026-07-06,closed,High,Resolved remotely
+WO0000204,ACCT000461,Repair,2026-02-13,2026-02-20,closed,High,Resolved remotely
+WO0000205,ACCT000461,Disconnect,2025-11-01,2025-11-07,closed,Low,Replaced equipment
+WO0000206,ACCT000466,Install,2025-12-10,,open,Medium,
+WO0000207,ACCT000466,Disconnect,2025-04-15,2025-04-19,closed,Medium,Customer educated
+WO0000208,ACCT000469,Upgrade,2026-06-29,2026-07-06,closed,Medium,Truck roll - fixed
+WO0000209,ACCT000474,Upgrade,2023-10-08,2023-10-13,closed,Low,Customer educated
+WO0000210,ACCT000474,Disconnect,2023-12-20,2023-12-25,closed,Medium,Resolved remotely
+WO0000211,ACCT000479,Repair,2024-04-04,2024-04-12,closed,Low,Truck roll - fixed
+WO0000212,ACCT000479,Upgrade,2025-11-22,,open,Medium,
+WO0000213,ACCT000481,Repair,2023-01-19,2023-01-28,closed,Low,Replaced equipment
+WO0000214,ACCT000481,Repair,2022-05-25,,open,Low,
+WO0000215,ACCT000486,Repair,2026-03-05,2026-03-12,closed,Low,Truck roll - fixed
+WO0000216,ACCT000490,Install,2026-01-02,2026-01-04,closed,Low,Customer educated
+WO0000217,ACCT000495,Install,2026-06-24,2026-06-30,closed,Medium,Truck roll - fixed
+WO0000218,ACCT000495,Repair,2026-06-02,2026-06-08,closed,High,Truck roll - fixed
+WO0000219,ACCT000498,Disconnect,2024-08-23,2024-08-25,closed,Medium,Replaced equipment
+WO0000220,ACCT000498,Disconnect,2026-04-04,2026-04-11,closed,High,Resolved remotely
+WO0000221,ACCT000499,Disconnect,2025-05-10,,open,Low,
+WO0000222,ACCT000499,Repair,2025-03-21,2025-03-25,closed,Medium,Resolved remotely
+WO0000223,ACCT000505,Repair,2025-04-13,2025-04-20,closed,Medium,Resolved remotely
+WO0000224,ACCT000508,Install,2026-06-23,2026-06-29,closed,Low,Customer educated
+WO0000225,ACCT000508,Upgrade,2026-06-16,2026-06-21,closed,Low,Customer educated
+WO0000226,ACCT000509,Repair,2024-08-01,2024-08-05,closed,High,Customer educated
+WO0000227,ACCT000512,Install,2025-09-19,2025-09-26,closed,Medium,Resolved remotely
+WO0000228,ACCT000519,Repair,2025-03-15,2025-03-18,closed,Low,Resolved remotely
+WO0000229,ACCT000519,Repair,2025-04-25,2025-04-30,closed,Medium,Truck roll - fixed
+WO0000230,ACCT000521,Install,2026-02-05,2026-02-07,closed,Medium,Resolved remotely
+WO0000231,ACCT000522,Install,2026-04-24,2026-05-03,closed,Low,Customer educated
+WO0000232,ACCT000522,Disconnect,2026-04-30,2026-05-09,closed,Low,Replaced equipment
+WO0000233,ACCT000523,Disconnect,2025-06-28,2025-06-30,closed,Low,Replaced equipment
+WO0000234,ACCT000523,Install,2025-05-27,,open,Low,
+WO0000235,ACCT000528,Install,2026-06-15,2026-06-19,closed,High,Resolved remotely
+WO0000236,ACCT000528,Install,2026-04-20,2026-04-26,closed,Low,Replaced equipment
+WO0000237,ACCT000531,Repair,2024-08-24,2024-09-02,closed,Medium,Resolved remotely
+WO0000238,ACCT000535,Install,2024-11-20,2024-11-29,closed,Low,Customer educated
+WO0000239,ACCT000535,Install,2025-10-27,,open,High,
+WO0000240,ACCT000542,Repair,2026-06-20,2026-06-26,closed,Medium,Truck roll - fixed
+WO0000241,ACCT000542,Upgrade,2026-06-20,2026-06-28,closed,Medium,Truck roll - fixed
+WO0000242,ACCT000545,Upgrade,2026-06-25,2026-07-03,closed,Low,Truck roll - fixed
+WO0000243,ACCT000545,Install,2026-06-26,2026-07-04,closed,Low,Truck roll - fixed
+WO0000244,ACCT000547,Install,2024-08-20,2024-08-20,closed,Low,Customer educated
+WO0000245,ACCT000549,Repair,2024-08-25,2024-08-26,closed,Medium,Resolved remotely
+WO0000246,ACCT000549,Repair,2024-02-29,2024-03-08,closed,Low,Resolved remotely
+WO0000247,ACCT000550,Repair,2025-11-15,2025-11-15,closed,High,Customer educated
+WO0000248,ACCT000550,Disconnect,2026-06-23,2026-06-24,closed,Medium,Resolved remotely
+WO0000249,ACCT000551,Repair,2025-11-16,2025-11-19,closed,Low,Customer educated
+WO0000250,ACCT000554,Repair,2026-06-29,2026-07-04,closed,Low,Replaced equipment
+WO0000251,ACCT000554,Install,2025-09-24,2025-09-30,closed,Low,Replaced equipment
+WO0000252,ACCT000555,Install,2026-02-18,2026-02-22,closed,Low,Truck roll - fixed
+WO0000253,ACCT000555,Install,2024-10-04,2024-10-11,closed,Medium,Customer educated
+WO0000254,ACCT000559,Repair,2025-01-14,2025-01-22,closed,Medium,Customer educated
+WO0000255,ACCT000561,Repair,2024-10-23,2024-11-01,closed,High,Customer educated
+WO0000256,ACCT000561,Repair,2025-03-15,2025-03-21,closed,Low,Resolved remotely
+WO0000257,ACCT000563,Install,2025-10-20,2025-10-22,closed,Medium,Customer educated
+WO0000258,ACCT000565,Disconnect,2025-05-15,2025-05-19,closed,Low,Customer educated
+WO0000259,ACCT000565,Repair,2023-08-06,2023-08-06,closed,High,Customer educated
+WO0000260,ACCT000571,Repair,2025-02-25,2025-03-05,closed,Low,Replaced equipment
+WO0000261,ACCT000574,Install,2026-06-12,2026-06-15,closed,Low,Replaced equipment
+WO0000262,ACCT000574,Disconnect,2025-10-15,2025-10-15,closed,Low,Resolved remotely
+WO0000263,ACCT000578,Repair,2026-06-28,2026-06-30,closed,Low,Customer educated
+WO0000264,ACCT000578,Repair,2026-06-27,2026-06-30,closed,Medium,Truck roll - fixed
+WO0000265,ACCT000580,Upgrade,2026-04-10,2026-04-10,closed,Medium,Resolved remotely
+WO0000266,ACCT000586,Repair,2026-05-13,2026-05-19,closed,Low,Resolved remotely
+WO0000267,ACCT000588,Repair,2026-03-03,,open,Low,
+WO0000268,ACCT000591,Repair,2024-01-20,2024-01-27,closed,High,Truck roll - fixed
+WO0000269,ACCT000592,Repair,2024-11-20,2024-11-20,closed,Medium,Resolved remotely
+WO0000270,ACCT000592,Disconnect,2025-11-23,,open,High,
+WO0000271,ACCT000593,Repair,2025-02-24,2025-03-03,closed,Low,Truck roll - fixed
+WO0000272,ACCT000594,Repair,2026-04-29,,open,Medium,
+WO0000273,ACCT000595,Upgrade,2026-02-16,2026-02-16,closed,Low,Truck roll - fixed
+WO0000274,ACCT000595,Repair,2026-03-01,2026-03-09,closed,High,Resolved remotely
+WO0000275,ACCT000603,Repair,2026-06-04,2026-06-11,closed,Low,Customer educated
+WO0000276,ACCT000609,Install,2026-04-08,2026-04-17,closed,Low,Customer educated
+WO0000277,ACCT000609,Disconnect,2026-01-18,2026-01-21,closed,Low,Customer educated
+WO0000278,ACCT000612,Repair,2024-08-24,2024-08-27,closed,Medium,Replaced equipment
+WO0000279,ACCT000612,Repair,2024-08-25,2024-08-26,closed,Low,Truck roll - fixed
+WO0000280,ACCT000613,Install,2023-05-22,2023-05-26,closed,Low,Replaced equipment
+WO0000281,ACCT000616,Repair,2026-04-20,2026-04-22,closed,Low,Replaced equipment
+WO0000282,ACCT000616,Repair,2026-02-15,,open,Low,
+WO0000283,ACCT000618,Install,2021-09-18,2021-09-19,closed,Medium,Resolved remotely
+WO0000284,ACCT000628,Repair,2025-03-08,2025-03-15,closed,Low,Replaced equipment
+WO0000285,ACCT000630,Install,2025-02-11,2025-02-16,closed,Low,Replaced equipment
+WO0000286,ACCT000630,Repair,2023-07-29,,open,Low,
+WO0000287,ACCT000636,Repair,2025-05-26,2025-05-29,closed,Medium,Truck roll - fixed
+WO0000288,ACCT000637,Install,2026-03-06,2026-03-06,closed,Low,Customer educated
+WO0000289,ACCT000639,Install,2025-04-10,2025-04-10,closed,Low,Customer educated
+WO0000290,ACCT000639,Install,2023-08-06,2023-08-13,closed,Low,Truck roll - fixed
+WO0000291,ACCT000640,Disconnect,2026-02-05,,open,High,
+WO0000292,ACCT000640,Install,2026-01-16,2026-01-22,closed,Medium,Replaced equipment
+WO0000293,ACCT000647,Disconnect,2025-10-24,2025-10-26,closed,Low,Replaced equipment
+WO0000294,ACCT000647,Disconnect,2026-04-08,2026-04-17,closed,Medium,Resolved remotely
+WO0000295,ACCT000653,Repair,2026-06-28,2026-07-07,closed,Medium,Replaced equipment
+WO0000296,ACCT000655,Repair,2026-01-09,,open,Low,
+WO0000297,ACCT000655,Repair,2026-04-01,2026-04-05,closed,Low,Truck roll - fixed
+WO0000298,ACCT000659,Repair,2025-03-12,2025-03-18,closed,Low,Truck roll - fixed
+WO0000299,ACCT000659,Repair,2025-08-12,2025-08-13,closed,High,Truck roll - fixed
+WO0000300,ACCT000663,Repair,2026-01-24,,open,Medium,
+WO0000301,ACCT000663,Repair,2025-07-17,,open,Low,
+WO0000302,ACCT000664,Repair,2026-06-13,2026-06-21,closed,High,Replaced equipment
+WO0000303,ACCT000667,Install,2025-04-13,2025-04-14,closed,Low,Customer educated
+WO0000304,ACCT000667,Repair,2025-11-17,2025-11-23,closed,High,Resolved remotely
+WO0000305,ACCT000669,Repair,2025-11-02,2025-11-04,closed,Medium,Truck roll - fixed
+WO0000306,ACCT000674,Upgrade,2025-03-29,2025-04-01,closed,High,Truck roll - fixed
+WO0000307,ACCT000676,Install,2025-12-26,2025-12-27,closed,Low,Truck roll - fixed
+WO0000308,ACCT000676,Upgrade,2026-04-21,2026-04-25,closed,Low,Truck roll - fixed
+WO0000309,ACCT000679,Install,2025-03-14,2025-03-23,closed,Low,Customer educated
+WO0000310,ACCT000680,Repair,2026-04-21,2026-04-28,closed,Low,Replaced equipment
+WO0000311,ACCT000681,Repair,2025-11-23,2025-12-01,closed,Low,Customer educated
+WO0000312,ACCT000682,Repair,2024-02-10,2024-02-17,closed,Low,Resolved remotely
+WO0000313,ACCT000684,Upgrade,2025-04-02,2025-04-11,closed,Low,Resolved remotely
+WO0000314,ACCT000685,Repair,2025-03-31,2025-04-07,closed,Low,Replaced equipment
+WO0000315,ACCT000685,Repair,2025-12-15,2025-12-15,closed,High,Truck roll - fixed
+WO0000316,ACCT000691,Repair,2026-06-26,2026-06-26,closed,Low,Resolved remotely
+WO0000317,ACCT000691,Install,2026-06-26,,open,Low,
+WO0000318,ACCT000695,Repair,2024-01-13,2024-01-20,closed,High,Customer educated
+WO0000319,ACCT000696,Repair,2025-08-15,2025-08-19,closed,High,Customer educated
+WO0000320,ACCT000697,Install,2025-01-26,2025-02-03,closed,High,Truck roll - fixed
+WO0000321,ACCT000697,Repair,2025-06-01,2025-06-03,closed,Low,Customer educated
+WO0000322,ACCT000700,Install,2026-04-29,2026-05-02,closed,Low,Resolved remotely
+WO0000323,ACCT000701,Repair,2024-11-03,2024-11-07,closed,Low,Customer educated
+WO0000324,ACCT000702,Install,2026-02-15,,open,Medium,
+WO0000325,ACCT000702,Upgrade,2026-06-29,2026-07-01,closed,Low,Customer educated
+WO0000326,ACCT000706,Repair,2025-12-26,2026-01-02,closed,Low,Truck roll - fixed
+WO0000327,ACCT000706,Upgrade,2025-12-24,2026-01-01,closed,Medium,Replaced equipment
+WO0000328,ACCT000707,Repair,2026-06-26,2026-06-26,closed,High,Replaced equipment
+WO0000329,ACCT000710,Repair,2026-03-08,2026-03-08,closed,Medium,Resolved remotely
+WO0000330,ACCT000710,Install,2026-04-02,,open,Low,
+WO0000331,ACCT000717,Repair,2026-05-01,,open,Low,
+WO0000332,ACCT000720,Upgrade,2025-08-10,,open,Low,
+WO0000333,ACCT000721,Install,2024-10-15,,open,Low,
+WO0000334,ACCT000724,Repair,2024-11-26,2024-11-29,closed,Low,Resolved remotely
+WO0000335,ACCT000731,Repair,2025-12-03,2025-12-03,closed,Medium,Truck roll - fixed
+WO0000336,ACCT000734,Disconnect,2023-11-16,2023-11-25,closed,Medium,Truck roll - fixed
+WO0000337,ACCT000734,Repair,2025-03-14,2025-03-15,closed,Low,Resolved remotely
+WO0000338,ACCT000736,Repair,2025-05-11,2025-05-18,closed,Medium,Resolved remotely
+WO0000339,ACCT000736,Install,2024-04-22,2024-04-28,closed,Low,Resolved remotely
+WO0000340,ACCT000744,Install,2026-04-23,2026-04-28,closed,Medium,Customer educated
+WO0000341,ACCT000748,Repair,2019-06-26,2019-06-26,closed,High,Customer educated
+WO0000342,ACCT000754,Repair,2025-10-04,2025-10-04,closed,Low,Truck roll - fixed
+WO0000343,ACCT000755,Repair,2026-03-22,2026-03-30,closed,Low,Customer educated
+WO0000344,ACCT000755,Disconnect,2024-03-24,2024-03-25,closed,Medium,Customer educated
+WO0000345,ACCT000756,Install,2024-07-07,2024-07-12,closed,Medium,Truck roll - fixed
+WO0000346,ACCT000756,Disconnect,2025-01-23,2025-01-26,closed,Low,Replaced equipment
+WO0000347,ACCT000757,Upgrade,2025-12-27,2025-12-29,closed,High,Truck roll - fixed
+WO0000348,ACCT000757,Upgrade,2026-01-24,,open,Low,
+WO0000349,ACCT000758,Repair,2026-06-20,2026-06-25,closed,High,Resolved remotely
+WO0000350,ACCT000758,Install,2026-06-12,,open,High,
+WO0000351,ACCT000760,Install,2026-04-26,2026-05-03,closed,High,Resolved remotely
+WO0000352,ACCT000761,Upgrade,2025-09-12,,open,Low,
+WO0000353,ACCT000761,Install,2025-12-25,2026-01-01,closed,Low,Customer educated
+WO0000354,ACCT000762,Repair,2025-04-01,2025-04-08,closed,Low,Customer educated
+WO0000355,ACCT000762,Repair,2025-05-03,2025-05-06,closed,Low,Resolved remotely
+WO0000356,ACCT000763,Install,2024-03-16,2024-03-21,closed,Low,Customer educated
+WO0000357,ACCT000763,Install,2026-04-24,2026-05-01,closed,Low,Customer educated
+WO0000358,ACCT000765,Disconnect,2026-06-26,2026-07-03,closed,Low,Resolved remotely
+WO0000359,ACCT000769,Disconnect,2022-01-30,2022-02-05,closed,Low,Resolved remotely
+WO0000360,ACCT000769,Repair,2020-04-09,2020-04-11,closed,Medium,Resolved remotely
+WO0000361,ACCT000774,Repair,2025-04-02,,open,Medium,
+WO0000362,ACCT000778,Install,2026-03-24,2026-03-27,closed,Low,Truck roll - fixed
+WO0000363,ACCT000778,Install,2025-12-17,2025-12-24,closed,Low,Customer educated
+WO0000364,ACCT000782,Upgrade,2026-04-26,2026-05-03,closed,Medium,Truck roll - fixed
+WO0000365,ACCT000785,Upgrade,2024-10-28,2024-11-04,closed,Medium,Resolved remotely
+WO0000366,ACCT000790,Repair,2025-06-18,2025-06-20,closed,High,Resolved remotely
+WO0000367,ACCT000790,Repair,2025-02-06,2025-02-14,closed,High,Resolved remotely
+WO0000368,ACCT000791,Repair,2026-06-02,2026-06-08,closed,Medium,Replaced equipment
+WO0000369,ACCT000793,Install,2024-09-11,2024-09-11,closed,Low,Customer educated
+WO0000370,ACCT000793,Install,2025-12-16,2025-12-25,closed,Low,Truck roll - fixed
+WO0000371,ACCT000796,Install,2026-06-15,2026-06-20,closed,Low,Truck roll - fixed
+WO0000372,ACCT000797,Repair,2026-03-18,2026-03-23,closed,Low,Replaced equipment
+WO0000373,ACCT000797,Repair,2024-11-30,2024-12-06,closed,Low,Replaced equipment
+WO0000374,ACCT000814,Repair,2024-04-08,,open,Medium,
+WO0000375,ACCT000814,Upgrade,2023-01-07,2023-01-16,closed,Medium,Replaced equipment
+WO0000376,ACCT000815,Repair,2025-03-12,2025-03-16,closed,Medium,Resolved remotely
+WO0000377,ACCT000821,Install,2026-06-28,2026-06-28,closed,Low,Customer educated
+WO0000378,ACCT000821,Install,2026-06-17,2026-06-25,closed,Low,Replaced equipment
+WO0000379,ACCT000826,Repair,2025-09-10,2025-09-12,closed,High,Replaced equipment
+WO0000380,ACCT000827,Repair,2025-08-19,2025-08-25,closed,Medium,Truck roll - fixed
+WO0000381,ACCT000827,Repair,2025-08-25,2025-08-31,closed,Medium,Replaced equipment
+WO0000382,ACCT000830,Upgrade,2025-05-27,2025-06-03,closed,Medium,Customer educated
+WO0000383,ACCT000832,Disconnect,2019-08-23,,open,Low,
+WO0000384,ACCT000832,Repair,2023-07-16,2023-07-19,closed,Medium,Customer educated
+WO0000385,ACCT000835,Install,2026-06-10,2026-06-12,closed,High,Replaced equipment
+WO0000386,ACCT000844,Repair,2026-06-19,2026-06-28,closed,Low,Resolved remotely
+WO0000387,ACCT000844,Repair,2026-06-22,2026-06-24,closed,Medium,Truck roll - fixed
+WO0000388,ACCT000845,Upgrade,2024-02-11,,open,Medium,
+WO0000389,ACCT000845,Upgrade,2025-08-03,2025-08-09,closed,High,Resolved remotely
+WO0000390,ACCT000854,Install,2026-04-23,,open,Medium,
+WO0000391,ACCT000854,Repair,2025-04-02,2025-04-04,closed,Low,Resolved remotely
+WO0000392,ACCT000855,Disconnect,2024-11-18,2024-11-24,closed,Low,Replaced equipment
+WO0000393,ACCT000855,Repair,2022-02-02,2022-02-07,closed,Low,Truck roll - fixed
+WO0000394,ACCT000857,Install,2026-02-04,,open,High,
+WO0000395,ACCT000858,Repair,2025-12-30,,open,Low,
+WO0000396,ACCT000860,Repair,2025-05-07,2025-05-11,closed,High,Replaced equipment
+WO0000397,ACCT000860,Install,2026-02-24,2026-02-25,closed,High,Truck roll - fixed
+WO0000398,ACCT000862,Upgrade,2026-02-24,2026-03-02,closed,High,Truck roll - fixed
+WO0000399,ACCT000862,Install,2026-01-06,2026-01-08,closed,High,Resolved remotely
+WO0000400,ACCT000863,Repair,2025-01-25,,open,Medium,
+WO0000401,ACCT000863,Repair,2025-03-28,,open,Low,
+WO0000402,ACCT000866,Repair,2026-06-03,2026-06-07,closed,Low,Customer educated
+WO0000403,ACCT000868,Repair,2026-04-07,2026-04-15,closed,Low,Truck roll - fixed
+WO0000404,ACCT000869,Repair,2026-03-25,2026-03-25,closed,Low,Truck roll - fixed
+WO0000405,ACCT000871,Repair,2025-07-07,,open,Medium,
+WO0000406,ACCT000874,Install,2026-06-18,,open,Low,
+WO0000407,ACCT000874,Disconnect,2026-06-14,2026-06-20,closed,Low,Resolved remotely
+WO0000408,ACCT000878,Install,2025-10-13,2025-10-16,closed,Low,Replaced equipment
+WO0000409,ACCT000879,Repair,2026-03-14,2026-03-17,closed,Medium,Resolved remotely
+WO0000410,ACCT000879,Install,2026-06-15,2026-06-23,closed,Medium,Replaced equipment
+WO0000411,ACCT000880,Repair,2025-06-10,,open,Low,
+WO0000412,ACCT000880,Repair,2024-10-23,2024-10-26,closed,Low,Truck roll - fixed
+WO0000413,ACCT000883,Repair,2026-06-23,2026-06-30,closed,Medium,Replaced equipment
+WO0000414,ACCT000895,Upgrade,2025-07-06,2025-07-08,closed,Medium,Replaced equipment
+WO0000415,ACCT000895,Repair,2026-01-16,2026-01-16,closed,Medium,Replaced equipment
+WO0000416,ACCT000898,Repair,2024-04-08,2024-04-08,closed,High,Customer educated
+WO0000417,ACCT000899,Install,2025-05-20,2025-05-25,closed,Medium,Replaced equipment
+WO0000418,ACCT000899,Repair,2025-06-09,2025-06-18,closed,High,Resolved remotely
+WO0000419,ACCT000911,Repair,2025-07-16,2025-07-25,closed,Low,Truck roll - fixed
+WO0000420,ACCT000911,Repair,2024-01-29,2024-02-01,closed,Low,Resolved remotely
+WO0000421,ACCT000913,Repair,2025-01-15,2025-01-19,closed,Low,Customer educated
+WO0000422,ACCT000914,Upgrade,2024-11-17,2024-11-19,closed,Low,Resolved remotely
+WO0000423,ACCT000916,Disconnect,2024-03-07,,open,Medium,
+WO0000424,ACCT000921,Repair,2026-01-28,2026-02-01,closed,Medium,Resolved remotely
+WO0000425,ACCT000923,Install,2024-02-11,2024-02-14,closed,Low,Replaced equipment
+WO0000426,ACCT000925,Repair,2026-06-28,2026-07-06,closed,Low,Resolved remotely
+WO0000427,ACCT000931,Install,2025-11-01,,open,Medium,
+WO0000428,ACCT000932,Install,2023-10-05,2023-10-07,closed,Low,Replaced equipment
+WO0000429,ACCT000939,Repair,2024-04-28,2024-05-03,closed,Low,Resolved remotely
+WO0000430,ACCT000939,Repair,2026-04-21,2026-04-26,closed,Medium,Replaced equipment
+WO0000431,ACCT000943,Upgrade,2023-09-19,2023-09-27,closed,Low,Resolved remotely
+WO0000432,ACCT000944,Repair,2024-08-13,,open,Medium,
+WO0000433,ACCT000947,Repair,2024-01-25,2024-02-01,closed,Low,Truck roll - fixed
+WO0000434,ACCT000948,Upgrade,2025-07-24,2025-07-30,closed,Medium,Replaced equipment
+WO0000435,ACCT000949,Upgrade,2025-09-19,,open,Medium,
+WO0000436,ACCT000949,Upgrade,2025-08-07,2025-08-11,closed,Low,Replaced equipment
+WO0000437,ACCT000951,Repair,2026-06-05,2026-06-08,closed,Low,Resolved remotely
+WO0000438,ACCT000955,Install,2023-03-04,2023-03-13,closed,Medium,Resolved remotely
+WO0000439,ACCT000955,Repair,2025-05-03,2025-05-09,closed,Medium,Customer educated
+WO0000440,ACCT000958,Upgrade,2026-01-20,2026-01-29,closed,Medium,Truck roll - fixed
+WO0000441,ACCT000971,Disconnect,2026-04-27,2026-05-04,closed,Low,Replaced equipment
+WO0000442,ACCT000972,Upgrade,2025-09-05,,open,Low,
+WO0000443,ACCT000972,Repair,2024-09-21,2024-09-23,closed,Low,Truck roll - fixed
+WO0000444,ACCT000980,Repair,2025-05-16,,open,Medium,
+WO0000445,ACCT000981,Upgrade,2026-06-17,2026-06-18,closed,High,Truck roll - fixed
+WO0000446,ACCT000981,Disconnect,2026-06-18,,open,Low,
+WO0000447,ACCT000984,Install,2026-01-17,2026-01-25,closed,High,Truck roll - fixed
+WO0000448,ACCT000984,Install,2026-03-29,,open,Low,
+WO0000449,ACCT000985,Disconnect,2026-06-17,2026-06-17,closed,Medium,Truck roll - fixed
+WO0000450,ACCT000991,Repair,2022-07-10,2022-07-17,closed,Medium,Truck roll - fixed
+WO0000451,ACCT000992,Repair,2026-02-05,,open,Low,
+WO0000452,ACCT000992,Repair,2026-04-18,,open,High,
+WO0000453,ACCT000995,Repair,2026-06-22,2026-06-25,closed,Low,Replaced equipment
+WO0000454,ACCT000995,Upgrade,2026-03-24,,open,Low,
+WO0000455,ACCT000997,Upgrade,2025-04-17,2025-04-18,closed,Low,Truck roll - fixed
+WO0000456,ACCT001000,Repair,2025-09-16,2025-09-16,closed,Medium,Customer educated

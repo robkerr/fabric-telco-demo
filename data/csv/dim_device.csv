@@ -1,0 +1,6 @@
+device_id,model,type,monthly_price
+DEV_MODEM_STD,TelcoConnect Modem,modem,5.0
+DEV_ROUTER_MESH,TelcoConnect Mesh Router,router,10.0
+DEV_PHONE_A,Aurora 5G Phone,phone,22.0
+DEV_PHONE_B,Aurora Lite Phone,phone,12.0
+DEV_NONE,Bring Your Own Device,byod,0.0

@@ -1,0 +1,8 @@
+promotion_id,name,type,discount_pct,discount_amount,terms
+PROMO_ACQ_1,New Customer $200 Credit,acquisition,,200.0,One-time bill credit for new residential accounts.
+PROMO_ACQ_2,First 3 Months Half Off Internet,acquisition,50.0,,50% off internet MRC for first 3 months.
+PROMO_XSELL_1,"Add Mobile, Save $10/mo",crosssell,,10.0,$10/mo discount when mobile is added to an internet account.
+PROMO_XSELL_2,Bundle TV + Internet Save 15%,crosssell,15.0,,15% off when TV is bundled with internet.
+PROMO_RET_1,Loyalty $30 Credit,retention,,30.0,One-time loyalty credit to retain at-risk customers.
+PROMO_RET_2,Retention 20% Off 6 Months,retention,20.0,,20% off MRC for 6 months for save/retention offers.
+PROMO_SVC_1,Service Outage Credit,service,,15.0,Goodwill credit following a qualifying outage.

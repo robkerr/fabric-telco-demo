@@ -1,0 +1,10 @@
+plan_id,product_id,name,speed_mbps,data_gb,price
+PLAN_INT_100,PROD_INT,Internet 100,100.0,,45.0
+PLAN_INT_500,PROD_INT,Internet 500,500.0,,65.0
+PLAN_INT_1G,PROD_INT,Internet Gig,1000.0,,85.0
+PLAN_INT_2G,PROD_INT,Internet 2 Gig,2000.0,,110.0
+PLAN_MOB_UNL,PROD_MOB,Mobile Unlimited,,,55.0
+PLAN_MOB_40,PROD_MOB,Mobile 40GB,,40.0,40.0
+PLAN_MOB_10,PROD_MOB,Mobile 10GB,,10.0,25.0
+PLAN_VOICE_STD,PROD_VOICE,Home Phone Unlimited,,,25.0
+PLAN_TV_STD,PROD_TV,Streaming TV,,,45.0

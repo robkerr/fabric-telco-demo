@@ -68,4 +68,7 @@ foreach ($name in $order) {
 
 Write-Host ''
 Write-Host 'Data load complete. Curated tables + customer_360 are built.' -ForegroundColor Green
-Write-Host 'Next: ./scripts/verify_customer360.ps1  then  ./scripts/30_create_data_agent.ps1' -ForegroundColor Green
+Write-Host 'Next:' -ForegroundColor Green
+Write-Host '  1) ./scripts/verify_customer360.ps1'
+Write-Host '  2) In Fabric, open the "05_create_data_agent" notebook, attach the Lakehouse,'
+Write-Host '     Run all, then copy DATA_AGENT_ARTIFACT_ID + DATA_AGENT_MCP_ENDPOINT into .env.'

@@ -8,9 +8,9 @@
     Fabric Data Agent, Azure AI Search, and Web IQ tools (best-effort).
 
 .NOTES
-    Requires infra/deploy.ps1 to have set FOUNDRY_PROJECT_ENDPOINT, and (ideally)
-    30_create_data_agent.ps1 to have set DATA_AGENT_ARTIFACT_ID. Authenticate with
-    'az login' (DefaultAzureCredential) before running.
+    Requires infra/deploy.ps1 to have set FOUNDRY_PROJECT_ENDPOINT, and (ideally) the
+    05_create_data_agent notebook to have been run in Fabric so DATA_AGENT_ARTIFACT_ID is set
+    in .env. Authenticate with 'az login' (DefaultAzureCredential) before running.
 #>
 [CmdletBinding()]
 param()

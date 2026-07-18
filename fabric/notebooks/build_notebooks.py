@@ -12,13 +12,17 @@ Notebooks produced:
     02_load_bronze.ipynb          - raw parquet -> bronze_* Delta tables
     03_build_silver_gold.ipynb    - curated dim_/fact_ tables (clean names)
     04_ml_scores.ipynb            - churn + cross-sell gold tables + customer_360
+    05_create_data_agent.ipynb    - create & publish the Fabric Data Agent (run in Fabric)
 """
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
+import yaml
+
 HERE = Path(__file__).resolve().parent
+DATA_AGENT_CONFIG = HERE.parent / "data-agent" / "config.yaml"
 
 # All tables produced by the data generator (must match data/parquet/*.parquet).
 TABLES = [
@@ -351,9 +355,110 @@ LEFT JOIN ml_crosssell_reco xs ON a.account_id = xs.account_id
     ])
 
 
+# ----------------------------------------------------------------------------
+# 05 - create & publish the Fabric Data Agent (run inside Fabric)
+# ----------------------------------------------------------------------------
+def nb_05():
+    cfg = yaml.safe_load(DATA_AGENT_CONFIG.read_text(encoding="utf-8"))
+    ds = (cfg.get("datasources") or [{}])[0]
+    example_queries = [(e["question"], e["query"]) for e in cfg.get("example_queries", [])]
+
+    return notebook([
+        md("# 05 - Create & publish the Fabric Data Agent",
+           "",
+           "Run this **inside Fabric** (it uses the `fabric-data-agent-sdk`, which relies on the",
+           "Fabric runtime for auth and .NET). It creates/updates the Telco data agent, attaches",
+           "the Lakehouse, sets instructions + example queries, and publishes.",
+           "",
+           "**Steps:** attach the Telco Lakehouse as the default Lakehouse, then **Run all**. Copy",
+           "the printed `DATA_AGENT_ARTIFACT_ID` and `DATA_AGENT_MCP_ENDPOINT` into your local `.env`.",
+           "",
+           "> This is the supported way to create the data agent (it is not created from the local",
+           "> workstation). Config below mirrors `fabric/data-agent/config.yaml`, the source of truth."),
+        code("%pip install --quiet fabric-data-agent-sdk"),
+        md("## Configuration (mirrors fabric/data-agent/config.yaml)"),
+        code(f"NAME = {cfg['name']!r}",
+             f"DESCRIPTION = {cfg.get('description', 'Telco data agent')!r}",
+             f"LAKEHOUSE = {ds.get('artifact', 'TelcoLakehouse')!r}",
+             f"AI_INSTRUCTIONS = {cfg['ai_instructions']!r}",
+             f"DS_INSTRUCTIONS = {ds.get('instructions', '')!r}",
+             f"EXAMPLE_QUERIES = {example_queries!r}"),
+        md("## Resolve the current workspace"),
+        code("try:",
+             "    import notebookutils",
+             "    workspace_id = notebookutils.runtime.context.get('currentWorkspaceId')",
+             "except Exception:",
+             "    workspace_id = None",
+             "if not workspace_id:",
+             "    import sempy.fabric as fabric",
+             "    workspace_id = fabric.get_notebook_workspace_id()",
+             "print('Workspace:', workspace_id)"),
+        md("## Create, configure, and publish"),
+        code("from fabric.dataagent.client import create_data_agent",
+             "",
+             "agent = create_data_agent(data_agent_name=NAME, workspace_id=workspace_id)",
+             "agent.update_settings(ai_instructions=AI_INSTRUCTIONS)",
+             "print('Applied AI instructions.')",
+             "",
+             "ds = agent.add_staging_datasource(",
+             "    artifact_name_or_id=LAKEHOUSE, workspace_id_or_name=workspace_id)",
+             "print('Added datasource:', LAKEHOUSE)",
+             "",
+             "# datasource-level instructions (method name varies by SDK version)",
+             "for _m in ('update_configuration', 'update_settings', 'set_instructions'):",
+             "    _fn = getattr(ds, _m, None)",
+             "    if callable(_fn) and DS_INSTRUCTIONS:",
+             "        try:",
+             "            _fn(instructions=DS_INSTRUCTIONS)",
+             "            print('datasource instructions via', _m)",
+             "            break",
+             "        except Exception:",
+             "            pass",
+             "",
+             "# example queries (best-effort across SDK versions)",
+             "_added = False",
+             "for _t in (ds, agent):",
+             "    for _m in ('add_example_queries', 'add_example_query'):",
+             "        _fn = getattr(_t, _m, None)",
+             "        if not callable(_fn):",
+             "            continue",
+             "        try:",
+             "            if _m.endswith('queries'):",
+             "                _fn(EXAMPLE_QUERIES)",
+             "            else:",
+             "                for _q, _s in EXAMPLE_QUERIES:",
+             "                    _fn(_q, _s)",
+             "            print('example queries via', _m)",
+             "            _added = True",
+             "            break",
+             "        except Exception:",
+             "            pass",
+             "    if _added:",
+             "        break",
+             "",
+             "agent.publish_staging(description=DESCRIPTION)",
+             "print('Published data agent.')"),
+        md("## Data agent id + MCP endpoint"),
+        code("aid = None",
+             "for _a in ('id', 'artifact_id', 'data_agent_id'):",
+             "    aid = getattr(agent, _a, None)",
+             "    if aid:",
+             "        break",
+             "if aid:",
+             "    print('DATA_AGENT_ARTIFACT_ID =', aid)",
+             "    print('DATA_AGENT_MCP_ENDPOINT =',",
+             "          f'https://api.fabric.microsoft.com/v1/mcp/workspaces/{workspace_id}/dataagents/{aid}/agent')",
+             "    print('\\nAdd these to your local .env so the Foundry agents can bind to the data agent.')",
+             "else:",
+             "    print('Published. Copy the data agent id + MCP URL from the agent settings ->',",
+             "          'Model Context Protocol tab into .env.')"),
+    ])
+
+
 if __name__ == "__main__":
     write("01_setup_lakehouse.ipynb", nb_01())
     write("02_load_bronze.ipynb", nb_02())
     write("03_build_silver_gold.ipynb", nb_03())
     write("04_ml_scores.ipynb", nb_04())
+    write("05_create_data_agent.ipynb", nb_05())
     print("Done.")

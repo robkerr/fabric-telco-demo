@@ -18,10 +18,10 @@ Copy-Item .env.example .env
 ./scripts/00_prereqs.ps1        # installs fab CLI, python venv + lightweight data-gen deps, checks az
 ```
 
-> By default `00_prereqs.ps1` installs only the lightweight data-generation deps (enough to
-> generate data and run the web app). The Fabric Data Agent / semantic-model SDKs are heavy and
-> are installed on demand by their own scripts, or you can add `-IncludeFabricSdk`. See
-> [Troubleshooting](#troubleshooting) if you hit a Windows path-length error.
+> `00_prereqs.ps1` installs only lightweight, cross-platform Python deps (enough to generate
+> data and run the web app). The Fabric Data Agent and semantic model are created by running
+> **Fabric notebooks** (they depend on the Fabric runtime / .NET), not from your workstation, so
+> no heavy SDKs are installed locally.
 
 ## 1. Data backend (Fabric) — PRIORITY
 
@@ -67,13 +67,28 @@ This creates an SPN, grants it **Admin** on the Fabric workspace, and writes `SP
 notebook's final cell also prints a validation sample.
 
 ### 1e. Semantic model + ontology
-Deploy the definitions in `fabric/semantic-model/` and `fabric/ontology/` (scripted in `10_provision_fabric.ps1`, or import via the Fabric UI).
+Import the semantic model over the gold tables in the Fabric portal (Lakehouse -> New semantic
+model), or run `fabric/semantic-model/create_semantic_model.py` **inside a Fabric notebook** (like
+the Data Agent, it uses the Fabric runtime / .NET and is not run from the workstation). Apply the
+measures/relationships from [`fabric/semantic-model/model_spec.yaml`](../fabric/semantic-model/model_spec.yaml).
+The ontology glossary lives in [`fabric/ontology/ontology.yaml`](../fabric/ontology/ontology.yaml).
 
-### 1f. Create & publish the Fabric Data Agent
-```powershell
-./scripts/30_create_data_agent.ps1
-```
-Uses `fabric-data-agent-sdk` to create the agent, attach the Lakehouse + semantic model, add per-journey instructions and example queries, and **publish**. Captures `DATA_AGENT_ARTIFACT_ID` + MCP endpoint to `.env`.
+### 1f. Create & publish the Fabric Data Agent (run in Fabric)
+
+The Data Agent is created by running a **Fabric notebook** - it uses the Fabric runtime for
+authentication and .NET, so it is not created from your local workstation.
+
+1. `10_provision_fabric.ps1` already uploaded the **`05_create_data_agent`** notebook to your
+   workspace. Open it in Fabric.
+2. Attach the **TelcoLakehouse** as the default Lakehouse (Explorer panel, "Add" / pin).
+3. **Run all.** The notebook installs `fabric-data-agent-sdk`, creates the agent, attaches the
+   Lakehouse, sets per-journey instructions + example queries, and **publishes**.
+4. Copy the printed **`DATA_AGENT_ARTIFACT_ID`** and **`DATA_AGENT_MCP_ENDPOINT`** into your
+   local `.env` (the Foundry agents in Phase 3 bind to these).
+
+The notebook's config is generated from [`fabric/data-agent/config.yaml`](../fabric/data-agent/config.yaml)
+(embedded when the notebooks are built), which stays the single source of truth for the agent's
+instructions and example queries.
 
 **Phase 1 done when:** committed data is loaded, `customer_360` returns rows over the SQL endpoint, and the Data Agent answers journey questions.
 
@@ -121,35 +136,18 @@ cd app; ../.venv/Scripts/python -m uvicorn main:app --port 8000
 
 ## Troubleshooting
 
-### Windows path-length error installing the Fabric Data Agent SDK
+### Why are the Data Agent and semantic model created in Fabric notebooks?
 
-Symptom (during `00_prereqs.ps1 -IncludeFabricSdk` or `30_create_data_agent.ps1`):
+They depend on the Fabric runtime and .NET interop (`sempy` / `pythonnet`), which is not designed
+to run from a local workstation - and does not work at all on **ARM64 Windows (Snapdragon /
+Copilot+ PCs)**, where you would see:
 
 ```
-ERROR: Could not install packages due to an OSError: [Errno 2] No such file or directory:
- '...\.venv\share\jupyter\labextensions\@jupyter-widgets\...<very long filename>.js'
+RuntimeError: Could not find a suitable hostfxr library in C:\Program Files\dotnet
+cannot load library '...\hostfxr.dll': error 0xc1
 ```
 
-Cause: `fabric-data-agent-sdk` pulls in `semantic-link-labs` -> `jupyterlab`/`ipywidgets`, whose
-extension asset files exceed the Windows 260-character path limit (made worse by a long repo path).
-
-Fixes (pick one):
-
-1. **Enable long paths (recommended, one-time).** In an elevated PowerShell:
-   ```powershell
-   New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
-       -Name LongPathsEnabled -Value 1 -PropertyType DWORD -Force
-   ```
-   Restart your shell, then re-run the script. (`git config --system core.longpaths true` also helps git.)
-
-2. **Run the SDK steps inside a Fabric notebook.** The Data Agent and semantic-model SDKs are
-   preinstalled in Fabric. Upload `fabric/data-agent/create_data_agent.py` /
-   `fabric/semantic-model/create_semantic_model.py` into a notebook and run them there — no local
-   install needed. The rest of the pipeline (data generation, Lakehouse provisioning, notebooks,
-   web app) does not need these SDKs.
-
-3. **Use a shorter repo path.** Cloning to e.g. `C:\src\telco` leaves more headroom under the
-   260-char limit.
-
-The lightweight `00_prereqs.ps1` default (data-generation deps only) does **not** hit this issue,
-so you can generate data and run the web app without any of the above.
+That's why this solution creates the Data Agent via the **`05_create_data_agent`** notebook and the
+semantic model via the portal or a notebook (step 1e/1f). Everything else - data generation,
+Lakehouse provisioning, the medallion notebooks, and the web app - runs locally with only
+lightweight, cross-platform Python packages, so no .NET or long-path setup is required.

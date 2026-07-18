@@ -14,9 +14,9 @@ This document orients a developer who has just cloned the repo.
 |---|---|
 | `data-generation/` | Python synthetic data generator. Start here to change the dataset. |
 | `data/` | Committed sample data (CSV + Parquet). Regenerate with `generate.py`. |
-| `fabric/notebooks/` | Lakehouse setup + medallion load + ML scores. Runnable in Fabric directly. |
+| `fabric/notebooks/` | Lakehouse setup + medallion load + ML scores + `05_create_data_agent`. Run in Fabric. |
 | `fabric/semantic-model/`, `fabric/ontology/` | Fabric item definitions. |
-| `fabric/data-agent/` | Data Agent config + `create_data_agent.py`. |
+| `fabric/data-agent/` | Data Agent `config.yaml` (embedded into the `05_create_data_agent` notebook). |
 | `scripts/` | PowerShell automation (SPN, provisioning, loading). |
 | `infra/` | Bicep for Azure resources. |
 | `foundry/` | Agent definitions + deployment. |
@@ -35,7 +35,7 @@ This document orients a developer who has just cloned the repo.
 | Change the data shape | Edit `data-generation/generators/*`, re-run `generate.py` |
 | Add more customers | `python data-generation/generate.py --customers 10000` |
 | Re-seed the Lakehouse | Re-run `scripts/10_provision_fabric.ps1` + `scripts/20_load_data.ps1` |
-| Reconfigure the Data Agent | Edit `fabric/data-agent/`, re-run `scripts/30_create_data_agent.ps1` |
+| Reconfigure the Data Agent | Edit `fabric/data-agent/config.yaml`, rebuild notebooks (`python fabric/notebooks/build_notebooks.py`), re-import (`10_provision_fabric.ps1 -SkipUpload`), and re-run the `05_create_data_agent` notebook in Fabric |
 | Change an agent's behavior | Edit `foundry/agents/*`, re-run `foundry/deploy_agents.ps1` |
 
 ## Gotchas

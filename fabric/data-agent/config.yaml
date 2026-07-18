@@ -1,5 +1,5 @@
 # Fabric Data Agent configuration for the Telco customer-service demo.
-# Consumed by create_data_agent.py.
+# Consumed by build_notebooks.py, which embeds it into the 05_create_data_agent notebook.
 
 name: TelcoCustomerServiceAgent
 description: >

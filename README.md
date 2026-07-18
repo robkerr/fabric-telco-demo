@@ -16,7 +16,7 @@ Because we start with **no data**, the solution first generates a **synthetic te
 |---|---|---|
 | Data | Lakehouse (Bronze/Silver/Gold Delta) + `customer_360` | Notebooks + PowerShell (Fabric REST / `fab` CLI) |
 | Data | Semantic model + ontology | Fabric item definitions |
-| Data | Fabric **Data Agent** (MCP endpoint) | `fabric-data-agent-sdk` (Python) |
+| Data | Fabric **Data Agent** (MCP endpoint) | `05_create_data_agent` notebook (run in Fabric) |
 | Azure | Foundry/AI project, AI Search, Storage, App Service, Key Vault | Bicep |
 | Agents | Orchestrator + 3 journey agents | Foundry Agent Service |
 | UI | Agent desktop web app + Teams/M365 Copilot | App Service + Teams manifest |
@@ -55,8 +55,9 @@ az login
 # 6. Load the data (runs the load notebooks)
 ./scripts/20_load_data.ps1
 
-# 7. Create & publish the Fabric Data Agent
-./scripts/30_create_data_agent.ps1
+# 7. Create & publish the Fabric Data Agent -- run IN FABRIC (not locally):
+#    open the "05_create_data_agent" notebook in your workspace, attach the Lakehouse,
+#    Run all, then copy DATA_AGENT_ARTIFACT_ID + DATA_AGENT_MCP_ENDPOINT into .env.
 ```
 
 Phases 2–5 (Azure infra, Foundry agents, Web App, Teams) are documented in [`docs/setup-guide.md`](docs/setup-guide.md).
@@ -79,7 +80,7 @@ See [`docs/demo-scenarios.md`](docs/demo-scenarios.md) for the three journey wal
 
 | Phase | What | Key scripts / assets |
 |---|---|---|
-| **1. Data backend (priority)** | Synthetic data → Lakehouse → `customer_360` → semantic model + ontology → **Fabric Data Agent** | `data-generation/`, `fabric/`, `scripts/10`–`30` |
+| **1. Data backend (priority)** | Synthetic data → Lakehouse → `customer_360` → semantic model + ontology → **Fabric Data Agent** | `data-generation/`, `fabric/`, `scripts/10`–`20`, `05_create_data_agent` notebook |
 | **2. Azure infra** | Foundry, AI Search, Storage, Key Vault, App Service | `infra/` (Bicep) |
 | **3. Foundry agents** | Orchestrator + 3 journey agents, knowledge sources | `foundry/` |
 | **4. UI** | Agent-desktop web app + Teams/M365 | `app/`, `teams/` |

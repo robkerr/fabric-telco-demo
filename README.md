@@ -56,6 +56,30 @@ python ./data-generation/generate.py --customers 1000
 
 Phases 2–5 (Azure infra, Foundry agents, Web App, Teams) are documented in [`docs/setup-guide.md`](docs/setup-guide.md).
 
+## Try it instantly (no cloud)
+
+The agent-desktop web app runs in **local mode** off the committed sample data — no Fabric or
+Foundry needed:
+
+```powershell
+python ./data-generation/generate.py --customers 1000
+./.venv/Scripts/pip install -r app/requirements.txt
+cd app; ../.venv/Scripts/python -m uvicorn main:app --port 8000
+# open http://localhost:8000  (search CUST000003, CUST000730, or CUST000783)
+```
+
+See [`docs/demo-scenarios.md`](docs/demo-scenarios.md) for the three journey walkthroughs.
+
+## Solution phases
+
+| Phase | What | Key scripts / assets |
+|---|---|---|
+| **1. Data backend (priority)** | Synthetic data → Lakehouse → `customer_360` → semantic model + ontology → **Fabric Data Agent** | `data-generation/`, `fabric/`, `scripts/10`–`30` |
+| **2. Azure infra** | Foundry, AI Search, Storage, Key Vault, App Service | `infra/` (Bicep) |
+| **3. Foundry agents** | Orchestrator + 3 journey agents, knowledge sources | `foundry/` |
+| **4. UI** | Agent-desktop web app + Teams/M365 | `app/`, `teams/` |
+| **5. Demo** | Journey walkthroughs | `docs/demo-scenarios.md` |
+
 ## Repository layout
 
 ```

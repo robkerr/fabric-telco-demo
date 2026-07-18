@@ -52,7 +52,8 @@ python ./data-generation/generate.py --customers 1000
 ```powershell
 ./scripts/verify_customer360.ps1    # runs a sample fetch against the SQL analytics endpoint
 ```
-Or run the query in `fabric/notebooks/03_build_silver_gold.ipynb` validation cell.
+`customer_360` is built by notebook `04_ml_scores` (it depends on the ML score tables); the
+notebook's final cell also prints a validation sample.
 
 ### 1e. Semantic model + ontology
 Deploy the definitions in `fabric/semantic-model/` and `fabric/ontology/` (scripted in `10_provision_fabric.ps1`, or import via the Fabric UI).
@@ -86,7 +87,20 @@ Creates the orchestrator + 3 journey agents and adds the **Fabric Data Agent as 
 
 ## 5. Demo
 
-Follow the scripted walkthroughs (per journey) referenced from the repo README once agents are deployed.
+Follow the scripted walkthroughs in [`demo-scenarios.md`](demo-scenarios.md) (one per journey,
+with real customer IDs).
+
+### Try it instantly (no cloud)
+
+The agent-desktop web app runs in **local mode** off the committed sample data — no Fabric or
+Foundry required — so you can demo the Customer 360 + chat flow right after generating data:
+
+```powershell
+python ./data-generation/generate.py --customers 1000   # if not already done
+./.venv/Scripts/pip install -r app/requirements.txt
+cd app; ../.venv/Scripts/python -m uvicorn main:app --port 8000
+# open http://localhost:8000  (search e.g. CUST000003, CUST000730, CUST000783)
+```
 
 ## Reset / regenerate
 

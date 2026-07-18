@@ -1,6 +1,12 @@
 # Data Model
 
-The synthetic dataset models a residential telecommunications provider offering **internet, mobile, and voice** products. Data is generated locally (see [`../data-generation/`](../data-generation)) and loaded into a Fabric Lakehouse using a Bronze/Silver/Gold medallion.
+The synthetic dataset models a residential telecommunications provider offering **internet, mobile, and voice** products. Data is generated locally (see [`../data-generation/`](../data-generation)) and loaded into a **schema-enabled** Fabric Lakehouse using a Bronze/Silver/Gold medallion mapped to Lakehouse **schemas**:
+
+- **`bronze`** schema — raw, as-ingested copy of each landing Parquet file (`bronze.dim_customer`, ...).
+- **`silver`** schema — created but intentionally **empty for now** (the synthetic source is already clean/conformed, so no separate silver transformations are needed yet).
+- **`gold`** schema — curated dimensional tables (`gold.dim_*`, `gold.fact_*`), ML scores (`gold.ml_*`), and the denormalized `gold.customer_360` serving object.
+
+Table names below are unqualified for readability; in the Lakehouse they live under `bronze.` (raw) and `gold.` (curated).
 
 ## Entity overview
 

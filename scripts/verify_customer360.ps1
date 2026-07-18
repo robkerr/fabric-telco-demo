@@ -54,13 +54,13 @@ function Invoke-Query([string]$sql) {
 }
 
 Write-Host "`n== customer_360 row count ==" -ForegroundColor Cyan
-(Invoke-Query "SELECT COUNT(*) AS customers FROM customer_360") | Format-Table -AutoSize
+(Invoke-Query "SELECT COUNT(*) AS customers FROM gold.customer_360") | Format-Table -AutoSize
 
 Write-Host "== New customers with an unpaid first bill (first-bill journey) ==" -ForegroundColor Cyan
 (Invoke-Query @"
 SELECT TOP 10 customer_id, first_name, last_name, account_status,
        last_invoice_amount, open_balance, risk_band, top_crosssell_product
-FROM customer_360
+FROM gold.customer_360
 WHERE last_invoice_is_first_bill = 1 AND last_invoice_paid = 0
 "@) | Format-Table -AutoSize
 
@@ -68,14 +68,14 @@ Write-Host "== High churn-risk active customers (retention journey) ==" -Foregro
 (Invoke-Query @"
 SELECT TOP 10 customer_id, first_name, last_name, churn_probability, churn_top_reason,
        recent_outage_exposure
-FROM customer_360
+FROM gold.customer_360
 WHERE risk_band = 'High' AND account_status = 'active'
 ORDER BY churn_probability DESC
 "@) | Format-Table -AutoSize
 
 if ($CustomerId) {
     Write-Host "== Full 360 profile for $CustomerId ==" -ForegroundColor Cyan
-    (Invoke-Query "SELECT * FROM customer_360 WHERE customer_id = '$CustomerId'") | Format-List
+    (Invoke-Query "SELECT * FROM gold.customer_360 WHERE customer_id = '$CustomerId'") | Format-List
 }
 
 Write-Host "`nCustomer 360 fetch path verified." -ForegroundColor Green

@@ -7,33 +7,37 @@ description: >
   billing and first-bill support, cross-sell/upsell, service health, outages, and
   retention/churn risk.
 
-# Global AI instructions (applied via update_settings).
+# Global AI instructions (applied via agent.update_settings).
 ai_instructions: |
   You are a data agent for a telecommunications customer-service team. You answer
   questions about customers, accounts, billing, subscriptions, usage, service health,
   outages, work orders, offers, and churn/cross-sell scores.
 
+  The data is in the Lakehouse "gold" schema. Reference tables as gold.<table>.
+
   Guidance:
-  - Prefer the curated gold tables (dim_*, fact_*, ml_*, customer_360).
-  - customer_360 is a denormalized per-customer profile; use it for "give me a 360 view".
-  - "First bill" means fact_invoice.is_first_bill = true. A confusing/high first bill
-    usually includes one-time activation and proration lines (fact_invoice_line).
-  - "At-risk" / "churn risk" customers are in ml_churn_score (risk_band High/Medium/Low).
-  - Cross-sell candidates and recommendations are in ml_crosssell_reco.
-  - "Outage" or "service degradation" -> fact_outage (by geography) and fact_service_metric
-    (per-account latency/packet loss/uptime).
+  - Prefer the curated gold tables (gold.dim_*, gold.fact_*, gold.ml_*, gold.customer_360).
+  - gold.customer_360 is a denormalized per-customer profile; use it for "give me a 360 view".
+  - "First bill" means gold.fact_invoice.is_first_bill = true. A confusing/high first bill
+    usually includes one-time activation and proration lines (gold.fact_invoice_line).
+  - "At-risk" / "churn risk" customers are in gold.ml_churn_score (risk_band High/Medium/Low).
+  - Cross-sell candidates and recommendations are in gold.ml_crosssell_reco.
+  - "Outage" or "service degradation" -> gold.fact_outage (by geography) and
+    gold.fact_service_metric (per-account latency/packet loss/uptime).
   - Always scope monetary answers to the correct account and time period.
   - Never invent values; only answer from the data.
 
 # Data sources to stage. In the 05_create_data_agent notebook the Lakehouse is auto-detected
 # from the notebook's attached default Lakehouse; the artifact value below is only a fallback.
+# The notebook selects the gold-schema tables so the agent can query them.
 datasources:
   - artifact: TelcoLakehouse          # fallback name; your actual LH (e.g. lh_telco) is auto-detected
     type: lakehouse
     instructions: |
-      This Lakehouse holds synthetic telco data in a medallion layout. Query the
-      curated (gold) tables with clean names. Join keys: customer_id, account_id,
-      geo_id, product_id, plan_id, invoice_id, work_order_id.
+      This Lakehouse uses a medallion layout with schemas: bronze (raw), silver (empty for now),
+      and gold (curated). Query the gold-schema tables (gold.dim_*, gold.fact_*, gold.ml_*,
+      gold.customer_360). Join keys: customer_id, account_id, geo_id, product_id, plan_id,
+      invoice_id, work_order_id.
 
 # Example queries grouped by customer journey. Improves NL->SQL accuracy.
 example_queries:
@@ -41,33 +45,33 @@ example_queries:
   - question: "Show me the first bill details for account ACCT000123"
     query: |
       SELECT il.description, il.category, il.amount
-      FROM fact_invoice i
-      JOIN fact_invoice_line il ON i.invoice_id = il.invoice_id
+      FROM gold.fact_invoice i
+      JOIN gold.fact_invoice_line il ON i.invoice_id = il.invoice_id
       WHERE i.account_id = 'ACCT000123' AND i.is_first_bill = true
       ORDER BY il.amount DESC
   - question: "Which new customers have an unpaid first bill?"
     query: |
       SELECT customer_id, first_name, last_name, last_invoice_amount, open_balance
-      FROM customer_360
+      FROM gold.customer_360
       WHERE last_invoice_is_first_bill = true AND last_invoice_paid = false
   # Journey 1: cross-sell
   - question: "Which internet customers should be offered mobile?"
     query: |
       SELECT r.account_id, r.score, r.rationale
-      FROM ml_crosssell_reco r
+      FROM gold.ml_crosssell_reco r
       WHERE r.recommended_product_id = 'PROD_MOB'
       ORDER BY r.score DESC
   - question: "What products does customer CUST000045 already have?"
     query: |
       SELECT s.product_id, s.plan_id, s.mrc, s.status
-      FROM fact_subscription s
-      JOIN dim_account a ON s.account_id = a.account_id
+      FROM gold.fact_subscription s
+      JOIN gold.dim_account a ON s.account_id = a.account_id
       WHERE a.customer_id = 'CUST000045'
   # Journey 3: service degradation & retention
   - question: "Which active customers are high churn risk and had a recent outage?"
     query: |
       SELECT customer_id, first_name, last_name, churn_probability, churn_top_reason
-      FROM customer_360
+      FROM gold.customer_360
       WHERE risk_band = 'High' AND account_status = 'active'
         AND recent_outage_exposure = true
       ORDER BY churn_probability DESC
@@ -75,5 +79,5 @@ example_queries:
     query: |
       SELECT ROUND(AVG(uptime_pct), 2) AS avg_uptime,
              ROUND(AVG(latency_ms), 1) AS avg_latency_ms
-      FROM fact_service_metric
+      FROM gold.fact_service_metric
       WHERE account_id = 'ACCT000123'

@@ -57,7 +57,7 @@ BillingFirstBillAgent.
 **Handy query (find your own example):**
 ```sql
 SELECT customer_id, first_name, last_name, last_invoice_amount
-FROM customer_360
+FROM gold.customer_360
 WHERE last_invoice_is_first_bill = true AND last_invoice_paid = false;
 ```
 

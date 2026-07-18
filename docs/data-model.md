@@ -1,6 +1,12 @@
 # Data Model
 
-The synthetic dataset models a residential telecommunications provider offering **internet, mobile, and voice** products. Data is generated locally (see [`../data-generation/`](../data-generation)) and loaded into a Fabric Lakehouse using a Bronze/Silver/Gold medallion.
+The synthetic dataset models a residential telecommunications provider offering **internet, mobile, and voice** products. Data is generated locally (see [`../data-generation/`](../data-generation)) and loaded into a **schema-enabled** Fabric Lakehouse using a Bronze/Silver/Gold medallion mapped to Lakehouse **schemas**:
+
+- **`bronze`** schema — raw, as-ingested copy of each landing Parquet file (`bronze.dim_customer`, ...).
+- **`silver`** schema — created but intentionally **empty for now** (the synthetic source is already clean/conformed, so no separate silver transformations are needed yet).
+- **`gold`** schema — curated dimensional tables (`gold.dim_*`, `gold.fact_*`), ML scores (`gold.ml_*`), and the denormalized `gold.customer_360` serving object.
+
+Table names below are unqualified for readability; in the Lakehouse they live under `bronze.` (raw) and `gold.` (curated).
 
 ## Entity overview
 
@@ -35,7 +41,7 @@ erDiagram
 | Table | Grain | Key columns |
 |---|---|---|
 | `dim_customer` | one row per customer | `customer_id`, name, dob, segment, tenure_months, contact prefs, `geo_id` |
-| `dim_account` | one billing account | `account_id`, `customer_id`, status (active/suspended/cancelled), open_date, autopay |
+| `dim_account` | one billing account | `account_id`, `customer_id`, status (active/suspended/cancelled), open_date, autopay, `churn_label` (0/1 training target for the churn model) |
 | `dim_geography` | one ZIP/region | `geo_id`, zip, city, state, region, lat/lon |
 | `dim_product` | one sellable product | `product_id`, name, category (internet/mobile/voice/tv), monthly_price |
 | `dim_plan` | one plan/tier | `plan_id`, name, speed_mbps or data_gb, price, `product_id` |
@@ -64,8 +70,8 @@ erDiagram
 
 | Table | Notes |
 |---|---|
-| `ml_churn_score` | `customer_id`, churn_probability, risk_band, top_reason (rule-based/synthetic) |
-| `ml_crosssell_reco` | `account_id`, recommended_product_id, score, rationale |
+| `ml_churn_score` | `customer_id`, `account_id`, churn_probability, risk_band, top_reason, scored_date. **Produced by a trained scikit-learn model** (GradientBoosting) in notebook `04`, logged to an MLflow experiment and registered as a Fabric ML model (`telco_churn_model`). Trained on `dim_account.churn_label`. (The committed `ml_churn_score` CSV/Parquet is a rule-based reference used only by the offline no-cloud web app.) |
+| `ml_crosssell_reco` | `account_id`, recommended_product_id, recommended_promotion_id, score, rationale. Product-gap logic (recommend a product the account doesn't own). |
 
 ### Gold serving object
 

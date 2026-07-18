@@ -36,12 +36,21 @@ $existing = (Invoke-FabricApi -Method GET -Path "/workspaces/$ws/lakehouses" -To
 if ($existing) {
     $lakehouseId = $existing.id
     Write-Host "  Reusing existing Lakehouse (id=$lakehouseId)"
+    if (-not $existing.properties.defaultSchema) {
+        Write-Warning "  This Lakehouse is NOT schema-enabled. The medallion notebooks expect"
+        Write-Warning "  bronze/silver/gold schemas. Delete it and re-run to create a schema-enabled one,"
+        Write-Warning "  or enable schemas in the Fabric UI."
+    }
 } else {
-    Write-Host "  Creating Lakehouse..."
+    Write-Host "  Creating schema-enabled Lakehouse..."
     $created = Invoke-FabricLro -Path "/workspaces/$ws/lakehouses" -Token $token `
-        -Body @{ displayName = $lhName; description = 'Telco demo Lakehouse (synthetic data)' }
+        -Body @{
+            displayName     = $lhName
+            description     = 'Telco demo Lakehouse (synthetic data)'
+            creationPayload = @{ enableSchemas = $true }
+        }
     $lakehouseId = $created.id
-    Write-Host "  Created Lakehouse (id=$lakehouseId)"
+    Write-Host "  Created Lakehouse (id=$lakehouseId, schemas enabled)"
 }
 Set-DotEnvValue -Key 'FABRIC_LAKEHOUSE_ID' -Value $lakehouseId
 

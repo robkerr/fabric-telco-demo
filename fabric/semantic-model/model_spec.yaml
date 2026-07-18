@@ -3,10 +3,12 @@
 # as documentation of the model's tables, relationships, and measures.
 
 name: TelcoCustomerService
-lakehouse: TelcoLakehouse          # FABRIC_LAKEHOUSE_NAME
+lakehouse: TelcoLakehouse          # your Lakehouse name (e.g. lh_telco)
 mode: DirectLake
+schema: gold                        # tables live in the Lakehouse "gold" schema
 
-# Gold tables to surface in the model.
+# Gold tables to surface in the model (all in the `gold` schema; DAX/relationships below
+# use bare names, which resolve within the gold schema).
 tables:
   - dim_customer
   - dim_account

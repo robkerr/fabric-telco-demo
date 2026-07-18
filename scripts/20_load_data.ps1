@@ -33,15 +33,20 @@ foreach ($name in $order) {
     if (-not $nb) { throw "Notebook '$name' not found in workspace. Re-run 10_provision_fabric.ps1." }
 
     Write-Host "== Running $name ==" -ForegroundColor Cyan
+    # defaultLakehouse MUST be nested under executionData.configuration (not directly
+    # under executionData) or Fabric ignores it and relative Files/ paths won't resolve.
     $body = @{
         executionData = @{
-            defaultLakehouse = @{ name = $lhName; id = $lakehouseId; workspaceId = $ws }
+            configuration = @{
+                defaultLakehouse = @{ name = $lhName; id = $lakehouseId; workspaceId = $ws }
+                useStarterPool   = $true
+            }
         }
     }
     $uri = "$($env.FABRIC_API_BASE)/workspaces/$ws/items/$($nb.id)/jobs/instances?jobType=RunNotebook"
     $resp = Invoke-WebRequest -Method Post -Uri $uri -Headers @{ Authorization = "Bearer $token" } `
         -Body ($body | ConvertTo-Json -Depth 10) -ContentType 'application/json' -UseBasicParsing
-    $statusUrl = $resp.Headers['Location']
+    $statusUrl = @($resp.Headers['Location'])[0]
     if (-not $statusUrl) { throw "No job status URL returned for $name." }
 
     $deadline = (Get-Date).AddSeconds(1800)
@@ -63,4 +68,7 @@ foreach ($name in $order) {
 
 Write-Host ''
 Write-Host 'Data load complete. Curated tables + customer_360 are built.' -ForegroundColor Green
-Write-Host 'Next: ./scripts/verify_customer360.ps1  then  ./scripts/30_create_data_agent.ps1' -ForegroundColor Green
+Write-Host 'Next:' -ForegroundColor Green
+Write-Host '  1) ./scripts/verify_customer360.ps1'
+Write-Host '  2) In Fabric, open the "05_create_data_agent" notebook, attach the Lakehouse,'
+Write-Host '     Run all, then copy DATA_AGENT_ARTIFACT_ID + DATA_AGENT_MCP_ENDPOINT into .env.'

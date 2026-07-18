@@ -194,8 +194,9 @@ function Invoke-FabricLro {
     if ($resp.StatusCode -eq 201 -or $resp.StatusCode -eq 200) {
         return ($resp.Content | ConvertFrom-Json)
     }
-    $opUrl = $resp.Headers['Operation-Location']
-    if (-not $opUrl) { $opUrl = $resp.Headers['Location'] }
+    # PowerShell 7 returns header values as string[]; take the first element.
+    $opUrl = @($resp.Headers['Operation-Location'])[0]
+    if (-not $opUrl) { $opUrl = @($resp.Headers['Location'])[0] }
     if (-not $opUrl) { return ($resp.Content | ConvertFrom-Json) }
 
     $deadline = (Get-Date).AddSeconds($TimeoutSec)

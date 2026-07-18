@@ -56,7 +56,7 @@ def _live_profile(customer_id: str) -> Optional[dict[str, Any]]:
     token = _access_token_struct()
     with pyodbc.connect(conn_str, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token}) as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM customer_360 WHERE customer_id = ?", customer_id)
+        cur.execute("SELECT * FROM gold.customer_360 WHERE customer_id = ?", customer_id)
         row = cur.fetchone()
         if not row:
             return None
@@ -78,7 +78,7 @@ def _live_search(query: str, limit: int) -> list[dict[str, Any]]:
         cur = conn.cursor()
         cur.execute(
             "SELECT TOP (?) customer_id, first_name, last_name, city, state, account_status "
-            "FROM customer_360 WHERE customer_id LIKE ? OR last_name LIKE ? OR first_name LIKE ?",
+            "FROM gold.customer_360 WHERE customer_id LIKE ? OR last_name LIKE ? OR first_name LIKE ?",
             limit, like, like, like)
         cols = [d[0] for d in cur.description]
         return [{c: _json_safe(v) for c, v in zip(cols, r)} for r in cur.fetchall()]

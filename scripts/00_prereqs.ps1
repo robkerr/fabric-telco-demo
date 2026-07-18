@@ -3,7 +3,13 @@
     Verify/install prerequisites for the Telco Fabric/Foundry demo.
     - checks Azure CLI + login
     - installs the Fabric CLI (fab) via pip if missing
-    - creates a Python venv and installs data-generation + data-agent deps
+    - creates a Python venv and installs the lightweight data-generation deps
+      (everything you need to generate data locally and run the web app)
+.DESCRIPTION
+    Only lightweight, cross-platform dependencies are installed. The Fabric Data Agent
+    and semantic model are created by running Fabric notebooks (they depend on the Fabric
+    runtime / .NET and are not created from the local workstation), so no heavy SDKs are
+    installed here.
 .NOTES
     Idempotent. Safe to re-run.
 #>
@@ -39,17 +45,21 @@ if (-not (Get-Command fab -ErrorAction SilentlyContinue)) {
 }
 
 if (-not $SkipVenv) {
-    Write-Host '== Creating Python venv + installing deps ==' -ForegroundColor Cyan
+    Write-Host '== Creating Python venv + installing data-generation deps ==' -ForegroundColor Cyan
     $venv = Join-Path $root '.venv'
     if (-not (Test-Path $venv)) { python -m venv $venv }
     $pip = Join-Path $venv 'Scripts\pip.exe'
     & $pip install --upgrade pip | Out-Null
     $reqGen = Join-Path $root 'data-generation\requirements.txt'
     if (Test-Path $reqGen) { & $pip install -r $reqGen }
-    $reqAgent = Join-Path $root 'fabric\data-agent\requirements.txt'
-    if (Test-Path $reqAgent) { & $pip install -r $reqAgent }
     Write-Host "  venv ready at $venv"
+    Write-Host "  NOTE: this script cannot activate the venv in your shell. Activate it yourself" -ForegroundColor Yellow
+    Write-Host "        before running python: .\.venv\Scripts\Activate.ps1" -ForegroundColor Yellow
 }
 
 Write-Host ''
-Write-Host 'Prerequisites checked. Next: az login (if needed) then ./scripts/setup_spn.ps1' -ForegroundColor Green
+Write-Host 'Prerequisites checked. Next:' -ForegroundColor Green
+Write-Host '  1) .\.venv\Scripts\Activate.ps1        # activate the venv (prompt shows (.venv))'
+Write-Host '  2) python ./data-generation/generate.py --customers 1000'
+Write-Host '  3) run the web app (app/README.md) for an instant local demo, or'
+Write-Host '  4) az login then ./scripts/setup_spn.ps1 to provision Fabric'

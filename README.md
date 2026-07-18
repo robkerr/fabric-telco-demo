@@ -14,9 +14,10 @@ Because we start with **no data**, the solution first generates a **synthetic te
 
 | Layer | Item | How it's created |
 |---|---|---|
-| Data | Lakehouse (Bronze/Silver/Gold Delta) + `customer_360` | Notebooks + PowerShell (Fabric REST / `fab` CLI) |
+| Data | Lakehouse (bronze/silver/gold schemas) + `customer_360` | Notebooks + PowerShell (Fabric REST / `fab` CLI) |
+| Data | **Churn ML model** (scikit-learn + MLflow, registered as a Fabric model) | `04_ml_scores` notebook |
 | Data | Semantic model + ontology | Fabric item definitions |
-| Data | Fabric **Data Agent** (MCP endpoint) | `fabric-data-agent-sdk` (Python) |
+| Data | Fabric **Data Agent** (MCP endpoint) | `05_create_data_agent` notebook (run in Fabric) |
 | Azure | Foundry/AI project, AI Search, Storage, App Service, Key Vault | Bicep |
 | Agents | Orchestrator + 3 journey agents | Foundry Agent Service |
 | UI | Agent desktop web app + Teams/M365 Copilot | App Service + Teams manifest |
@@ -35,14 +36,21 @@ Because we start with **no data**, the solution first generates a **synthetic te
 Copy-Item .env.example .env
 #    -> set FABRIC_WORKSPACE_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, etc.
 
-# 2. Install tooling (az, fab CLI, python venv + deps)
+# 2. Install tooling (az, fab CLI, python venv + lightweight data-gen deps)
 ./scripts/00_prereqs.ps1
+#    Then ACTIVATE the venv (00_prereqs can't do it for your shell):
+.\.venv\Scripts\Activate.ps1        # your prompt should now show (.venv)
 
-# 3. Create a service principal and grant it admin on the workspace
-./scripts/setup_spn.ps1
-
-# 4. Generate synthetic data (default: 1000 customers) into ./data
+# 3. Generate synthetic data (default: 1000 customers) into ./data
+#    This is fully local - no Azure/Fabric needed. You can demo the web app now
+#    ("Try it instantly" below).
 python ./data-generation/generate.py --customers 1000
+
+# --- The steps below provision Fabric and require az login + your workspace ---
+
+# 4. Create a service principal and grant it admin on the workspace
+az login
+./scripts/setup_spn.ps1
 
 # 5. Provision the Lakehouse and upload notebooks into the workspace
 ./scripts/10_provision_fabric.ps1
@@ -50,8 +58,10 @@ python ./data-generation/generate.py --customers 1000
 # 6. Load the data (runs the load notebooks)
 ./scripts/20_load_data.ps1
 
-# 7. Create & publish the Fabric Data Agent
-./scripts/30_create_data_agent.ps1
+# 7. Create the Fabric Data Agent -- run IN FABRIC (not locally):
+#    open the "05_create_data_agent" notebook, attach your Lakehouse, Run all.
+#    Then in the Data Agent UI: select the gold-schema tables + Publish, and copy
+#    DATA_AGENT_ARTIFACT_ID + DATA_AGENT_MCP_ENDPOINT into .env.
 ```
 
 Phases 2–5 (Azure infra, Foundry agents, Web App, Teams) are documented in [`docs/setup-guide.md`](docs/setup-guide.md).
@@ -74,7 +84,7 @@ See [`docs/demo-scenarios.md`](docs/demo-scenarios.md) for the three journey wal
 
 | Phase | What | Key scripts / assets |
 |---|---|---|
-| **1. Data backend (priority)** | Synthetic data → Lakehouse → `customer_360` → semantic model + ontology → **Fabric Data Agent** | `data-generation/`, `fabric/`, `scripts/10`–`30` |
+| **1. Data backend (priority)** | Synthetic data → Lakehouse → `customer_360` → semantic model + ontology → **Fabric Data Agent** | `data-generation/`, `fabric/`, `scripts/10`–`20`, `05_create_data_agent` notebook |
 | **2. Azure infra** | Foundry, AI Search, Storage, Key Vault, App Service | `infra/` (Bicep) |
 | **3. Foundry agents** | Orchestrator + 3 journey agents, knowledge sources | `foundry/` |
 | **4. UI** | Agent-desktop web app + Teams/M365 | `app/`, `teams/` |
@@ -102,3 +112,53 @@ teams/           Teams / M365 Copilot manifest & wiring
 - Synthetic data is committed so the Lakehouse can be seeded without regenerating; `generate.py` lets you regenerate or scale up.
 
 See [`docs/handoff.md`](docs/handoff.md) for a new-developer orientation.
+
+## Reset to a clean slate (start-from-scratch testing)
+
+The provisioning scripts are idempotent and **reuse** existing items (Lakehouse, notebooks,
+service principal, data agent) when they find them. To force a truly clean run so nothing is
+skipped, reset these before rerunning (Windows PowerShell, from the repo root):
+
+**1. Local Python environment**
+```powershell
+deactivate                              # only if your prompt shows (.venv); ignore any error
+Remove-Item -Recurse -Force .venv       # 00_prereqs.ps1 recreates it
+```
+
+**2. Local `.env` (clear stale IDs so scripts don't reuse old resources)**
+```powershell
+Copy-Item .env.example .env -Force
+# then re-enter your inputs in .env:
+#   FABRIC_WORKSPACE_ID   = <your NEW workspace id>
+#   AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, AZURE_LOCATION, AZURE_RESOURCE_GROUP
+#   FABRIC_LAKEHOUSE_NAME = <e.g. lh_telco>   (no spaces)
+# Leave SPN_*, FABRIC_LAKEHOUSE_ID, DATA_AGENT_*, FOUNDRY_*, AI_SEARCH_*, APP_SERVICE_NAME,
+# KEY_VAULT_NAME blank - the scripts repopulate them.
+```
+Recreating `.env` from the template is the safest step: a leftover `FABRIC_LAKEHOUSE_ID`,
+`SPN_APP_ID`, or `DATA_AGENT_ARTIFACT_ID` is exactly what makes a script "skip" creating something.
+
+**3. Fabric workspace** — delete the whole **workspace** (cleanest), or delete these items
+individually: the **Lakehouse**, the `01`-`05` **notebooks**, the **Data Agent**, and any
+**semantic model**. If you create a new workspace, put its id in `FABRIC_WORKSPACE_ID`.
+
+**4. Entra service principal** — delete the app registration (this also removes its service
+principal + secret):
+```powershell
+$appId = (Get-Content .env | Where-Object { $_ -match '^SPN_APP_ID=' }) -replace '^SPN_APP_ID=',''
+if ($appId) { az ad app delete --id $appId }   # or delete 'sp-telco-fabric-demo' in the Entra portal
+```
+> Deleting before you blank `SPN_APP_ID` in step 2. The soft-deleted app sits in
+> **Entra ID -> App registrations -> Deleted applications** for 30 days; a new app with the same
+> name is fine (names aren't unique). Purge it there if you want it gone immediately.
+
+**5. Azure infrastructure (only if you ran Phase 2 / `infra/deploy.ps1`)**
+```powershell
+az group delete --name <AZURE_RESOURCE_GROUP> --yes --no-wait
+```
+
+**6. (Optional) regenerate data** - the sample data is committed, so this is only needed if you
+changed the generator: `python ./data-generation/generate.py --customers 1000`.
+
+Then rerun from the [Quickstart](#quickstart): `00_prereqs.ps1` -> generate data -> `setup_spn.ps1`
+-> `10_provision_fabric.ps1` -> `20_load_data.ps1` -> `verify_customer360.ps1` -> the `05` notebook.

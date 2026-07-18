@@ -41,7 +41,7 @@ foreach ($name in $order) {
     $uri = "$($env.FABRIC_API_BASE)/workspaces/$ws/items/$($nb.id)/jobs/instances?jobType=RunNotebook"
     $resp = Invoke-WebRequest -Method Post -Uri $uri -Headers @{ Authorization = "Bearer $token" } `
         -Body ($body | ConvertTo-Json -Depth 10) -ContentType 'application/json' -UseBasicParsing
-    $statusUrl = $resp.Headers['Location']
+    $statusUrl = @($resp.Headers['Location'])[0]
     if (-not $statusUrl) { throw "No job status URL returned for $name." }
 
     $deadline = (Get-Date).AddSeconds(1800)

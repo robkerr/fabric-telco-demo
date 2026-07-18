@@ -82,14 +82,18 @@ authentication and .NET, so it is not created from your local workstation.
    workspace. Open it in Fabric.
 2. Attach **your Lakehouse** (whatever you named it, e.g. `lh_telco`) as the default Lakehouse
    (Explorer panel, "Add" / pin). The notebook auto-detects the attached Lakehouse.
-3. **Run all.** The notebook installs `fabric-data-agent-sdk`, creates the agent, attaches the
-   Lakehouse, sets per-journey instructions + example queries, and **publishes**.
-4. Copy the printed **`DATA_AGENT_ARTIFACT_ID`** and **`DATA_AGENT_MCP_ENDPOINT`** into your
-   local `.env` (the Foundry agents in Phase 3 bind to these).
+3. **Run all.** The notebook installs `fabric-data-agent-sdk`, creates the agent, applies the AI
+   instructions, and attaches the Lakehouse as a data source.
+4. **Finish in the Data Agent UI:** open the **TelcoCustomerServiceAgent** agent, **select the
+   `gold`-schema tables** (check the `gold` schema to include all of them), optionally add example
+   queries from `config.yaml`, and click **Publish**. (Programmatic table selection isn't reliable
+   across SDK versions, so this step is done in the UI.)
+5. Copy the printed **`DATA_AGENT_ARTIFACT_ID`** and **`DATA_AGENT_MCP_ENDPOINT`** into your
+   local `.env` (the Foundry agents in Phase 3 bind to these; the MCP endpoint works after publish).
 
 The notebook's config is generated from [`fabric/data-agent/config.yaml`](../fabric/data-agent/config.yaml)
 (embedded when the notebooks are built), which stays the single source of truth for the agent's
-instructions and example queries.
+name, instructions, and the example queries you can paste in the UI.
 
 **Phase 1 done when:** committed data is loaded, `customer_360` returns rows over the SQL endpoint, and the Data Agent answers journey questions.
 

@@ -10,9 +10,13 @@ off-cluster and does not work on ARM64 Windows.
    notebook into your workspace along with the medallion notebooks.
 2. In Fabric, open **`05_create_data_agent`**, attach **your Lakehouse** (whatever you named it,
    e.g. `lh_telco`) as the default Lakehouse, and **Run all**. The notebook auto-detects the
-   attached Lakehouse - you do not need to hardcode its name.
-3. Copy the printed `DATA_AGENT_ARTIFACT_ID` and `DATA_AGENT_MCP_ENDPOINT` into your local `.env`
-   (the Foundry agents bind to these in Phase 3).
+   attached Lakehouse - you do not need to hardcode its name. It creates the agent, applies the
+   AI instructions, and attaches the Lakehouse datasource.
+3. **In the Data Agent UI:** select the `gold`-schema tables (check the `gold` schema to include
+   all of them), optionally paste the example queries from `config.yaml`, and click **Publish**.
+   (Programmatic table selection isn't reliable across SDK versions, so it's done in the UI.)
+4. Copy the printed `DATA_AGENT_ARTIFACT_ID` and `DATA_AGENT_MCP_ENDPOINT` into your local `.env`
+   (the Foundry agents bind to these in Phase 3; the MCP endpoint works after you publish).
 
 ## Source of truth
 

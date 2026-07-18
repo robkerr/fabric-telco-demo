@@ -29,7 +29,7 @@ ai_instructions: |
 
 # Data sources to stage. In the 05_create_data_agent notebook the Lakehouse is auto-detected
 # from the notebook's attached default Lakehouse; the artifact value below is only a fallback.
-# The notebook selects the gold-schema tables so the agent can query them.
+# You select the gold-schema tables (and can paste these example queries) in the Data Agent UI.
 datasources:
   - artifact: TelcoLakehouse          # fallback name; your actual LH (e.g. lh_telco) is auto-detected
     type: lakehouse

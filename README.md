@@ -55,9 +55,10 @@ az login
 # 6. Load the data (runs the load notebooks)
 ./scripts/20_load_data.ps1
 
-# 7. Create & publish the Fabric Data Agent -- run IN FABRIC (not locally):
-#    open the "05_create_data_agent" notebook in your workspace, attach the Lakehouse,
-#    Run all, then copy DATA_AGENT_ARTIFACT_ID + DATA_AGENT_MCP_ENDPOINT into .env.
+# 7. Create the Fabric Data Agent -- run IN FABRIC (not locally):
+#    open the "05_create_data_agent" notebook, attach your Lakehouse, Run all.
+#    Then in the Data Agent UI: select the gold-schema tables + Publish, and copy
+#    DATA_AGENT_ARTIFACT_ID + DATA_AGENT_MCP_ENDPOINT into .env.
 ```
 
 Phases 2–5 (Azure infra, Foundry agents, Web App, Teams) are documented in [`docs/setup-guide.md`](docs/setup-guide.md).

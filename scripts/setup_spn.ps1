@@ -75,22 +75,51 @@ if ($SkipWorkspaceGrant) {
     Write-Warning "Skipping workspace grant (per -SkipWorkspaceGrant). Add the SPN as workspace Admin manually."
 } else {
     Write-Host "== Granting Admin on Fabric workspace $WorkspaceId ==" -ForegroundColor Cyan
-    # Use the signed-in USER token (must be a workspace admin) to add the SPN as Admin.
-    $userToken = az account get-access-token --resource 'https://api.fabric.microsoft.com' --query accessToken -o tsv
-    $body = @{
-        principal = @{ id = $spObjectId; type = 'ServicePrincipal' }
-        role      = 'Admin'
-    }
-    try {
-        Invoke-FabricApi -Method POST -Path "/workspaces/$WorkspaceId/roleAssignments" -Body $body -Token $userToken | Out-Null
-        Write-Host "  SPN granted Admin on the workspace." -ForegroundColor Green
-    } catch {
-        $msg = $_.Exception.Message
-        if ($msg -match '409' -or $msg -match 'already') {
-            Write-Host "  SPN already has a role on the workspace." -ForegroundColor Green
+
+    # Re-fetch the SP object id to be sure it's current and non-empty.
+    if (-not $spObjectId) { $spObjectId = az ad sp show --id $appId --query id -o tsv 2>$null }
+    if (-not $spObjectId) {
+        Write-Warning "  Could not resolve the service principal object id; skipping automatic grant."
+    } else {
+        # Use the signed-in USER token (must be a workspace admin) to add the SPN as Admin.
+        $userToken = az account get-access-token --resource 'https://api.fabric.microsoft.com' --query accessToken -o tsv
+        $body = @{
+            principal = @{ id = $spObjectId; type = 'ServicePrincipal' }
+            role      = 'Admin'
+        }
+        # A freshly created SP can take up to ~1 minute to be resolvable by Fabric, so retry.
+        $granted = $false
+        $lastErr = ''
+        for ($attempt = 1; $attempt -le 6 -and -not $granted; $attempt++) {
+            try {
+                Invoke-FabricApi -Method POST -Path "/workspaces/$WorkspaceId/roleAssignments" `
+                    -Body $body -Token $userToken | Out-Null
+                $granted = $true
+            } catch {
+                # Prefer the Fabric error JSON (errorCode/message) over the generic HTTP message.
+                $lastErr = $_.ErrorDetails.Message
+                if (-not $lastErr) { $lastErr = $_.Exception.Message }
+                if ($lastErr -match '409' -or $lastErr -match 'already' -or $lastErr -match 'PrincipalAlready') {
+                    Write-Host "  SPN already has a role on the workspace." -ForegroundColor Green
+                    $granted = $true
+                } elseif ($attempt -lt 6) {
+                    Write-Host "  Attempt $attempt failed (SP may still be propagating); retrying in 10s..." -ForegroundColor Yellow
+                    Start-Sleep -Seconds 10
+                }
+            }
+        }
+        if ($granted) {
+            Write-Host "  SPN granted Admin on the workspace." -ForegroundColor Green
         } else {
-            Write-Warning "  Could not grant workspace Admin automatically: $msg"
-            Write-Warning "  Add appId=$appId as an Admin of the workspace in the Fabric UI, then continue."
+            Write-Warning "  Could not grant workspace Admin automatically after retries."
+            Write-Warning "  Fabric error: $lastErr"
+            Write-Host ''
+            Write-Host "  Add it manually in the Fabric workspace:" -ForegroundColor Yellow
+            Write-Host "    Workspace -> Manage access -> Add people or groups" -ForegroundColor Yellow
+            Write-Host "    Search by DISPLAY NAME: '$DisplayName'  (the picker searches by name, not by ID)" -ForegroundColor Yellow
+            Write-Host "    Role: Admin" -ForegroundColor Yellow
+            Write-Host "  (Also ensure the tenant setting 'Service principals can use Fabric APIs' is enabled.)" -ForegroundColor Yellow
+            Write-Host "  Reference: appId=$appId  objectId=$spObjectId" -ForegroundColor DarkGray
         }
     }
 }

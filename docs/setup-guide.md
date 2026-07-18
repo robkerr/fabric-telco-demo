@@ -40,7 +40,11 @@ az login
 ```
 This creates an SPN, grants it **Admin** on the Fabric workspace, and writes `SPN_APP_ID` / `SPN_CLIENT_SECRET` / `SPN_TENANT_ID` to `.env`.
 
-> The workspace-admin grant uses the Fabric REST API (`POST /workspaces/{id}/roleAssignments`). If it fails due to tenant policy, add the SPN manually as a workspace Admin in the Fabric UI.
+> The workspace-admin grant uses the Fabric REST API (`POST /workspaces/{id}/roleAssignments`) and
+> retries while the new SP propagates. If it still fails, add the SPN manually: **Workspace ->
+> Manage access -> Add people or groups**, and **search by the SP display name**
+> (`sp-telco-fabric-demo`) - the picker searches by name, not by app/object ID - then assign
+> **Admin**. Also confirm the tenant setting **"Service principals can use Fabric APIs"** is enabled.
 
 ### 1c. Provision the Lakehouse + upload notebooks
 

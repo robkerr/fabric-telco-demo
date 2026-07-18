@@ -80,7 +80,8 @@ authentication and .NET, so it is not created from your local workstation.
 
 1. `10_provision_fabric.ps1` already uploaded the **`05_create_data_agent`** notebook to your
    workspace. Open it in Fabric.
-2. Attach the **TelcoLakehouse** as the default Lakehouse (Explorer panel, "Add" / pin).
+2. Attach **your Lakehouse** (whatever you named it, e.g. `lh_telco`) as the default Lakehouse
+   (Explorer panel, "Add" / pin). The notebook auto-detects the attached Lakehouse.
 3. **Run all.** The notebook installs `fabric-data-agent-sdk`, creates the agent, attaches the
    Lakehouse, sets per-journey instructions + example queries, and **publishes**.
 4. Copy the printed **`DATA_AGENT_ARTIFACT_ID`** and **`DATA_AGENT_MCP_ENDPOINT`** into your

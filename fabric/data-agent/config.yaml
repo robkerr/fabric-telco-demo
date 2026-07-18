@@ -25,9 +25,10 @@ ai_instructions: |
   - Always scope monetary answers to the correct account and time period.
   - Never invent values; only answer from the data.
 
-# Data sources to stage. The lakehouse artifact is resolved by name in the workspace.
+# Data sources to stage. In the 05_create_data_agent notebook the Lakehouse is auto-detected
+# from the notebook's attached default Lakehouse; the artifact value below is only a fallback.
 datasources:
-  - artifact: TelcoLakehouse          # FABRIC_LAKEHOUSE_NAME
+  - artifact: TelcoLakehouse          # fallback name; your actual LH (e.g. lh_telco) is auto-detected
     type: lakehouse
     instructions: |
       This Lakehouse holds synthetic telco data in a medallion layout. Query the

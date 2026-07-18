@@ -8,8 +8,9 @@ off-cluster and does not work on ARM64 Windows.
 
 1. Run `scripts/10_provision_fabric.ps1` (once) - it uploads the **`05_create_data_agent`**
    notebook into your workspace along with the medallion notebooks.
-2. In Fabric, open **`05_create_data_agent`**, attach the **TelcoLakehouse** as the default
-   Lakehouse, and **Run all**.
+2. In Fabric, open **`05_create_data_agent`**, attach **your Lakehouse** (whatever you named it,
+   e.g. `lh_telco`) as the default Lakehouse, and **Run all**. The notebook auto-detects the
+   attached Lakehouse - you do not need to hardcode its name.
 3. Copy the printed `DATA_AGENT_ARTIFACT_ID` and `DATA_AGENT_MCP_ENDPOINT` into your local `.env`
    (the Foundry agents bind to these in Phase 3).
 

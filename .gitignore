@@ -1,0 +1,35 @@
+# ---- Secrets / environment ----
+.env
+*.secret
+*.pem
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ---- Azure / Bicep ----
+*.azure/
+.bicep/
+main.json
+
+# ---- Node / web app ----
+node_modules/
+dist/
+build/
+.next/
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ---- Generated large data (keep committed sample small; ignore scaled-up runs) ----
+data/parquet/_scaled/
+data/csv/_scaled/

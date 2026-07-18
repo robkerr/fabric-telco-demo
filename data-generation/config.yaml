@@ -1,0 +1,40 @@
+# Synthetic data generation config for the Telco demo.
+# All volumes scale off the customer count unless noted. Seed makes runs reproducible.
+
+seed: 42
+as_of_date: "2026-06-30"      # "today" for tenure/first-bill/usage windows
+
+customers: 1000                # overridden by --customers
+
+# Fraction of customers who have a second/third product (drives cross-sell realism)
+multi_product_rate: 0.35
+
+# Account status distribution
+account_status:
+  active: 0.86
+  suspended: 0.06
+  cancelled: 0.08
+
+# How many months of billing history to generate per account (capped by tenure)
+max_billing_months: 12
+
+# Usage history window (days) generated per active account
+usage_days: 30
+
+# Service metric window (days) per active account
+service_metric_days: 14
+
+# Engagement volumes (per customer, expected)
+contacts_per_customer: 1.8
+feedback_rate: 0.4            # fraction of accounts with a survey response
+offer_rate: 0.5              # fraction of accounts presented an offer
+
+# Service ops
+outage_count: 25             # number of outage events across all geographies
+work_order_rate: 0.30        # fraction of accounts with >=1 work order
+
+# Geography
+geo_count: 60                # number of distinct ZIP/regions
+
+# First-bill window: accounts opened within this many days are flagged as "new"
+new_customer_days: 45

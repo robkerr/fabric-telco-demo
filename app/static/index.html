@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Telco Agent Desktop</title>
+<style>
+  :root { --bg:#0f1115; --panel:#171a21; --accent:#3b82f6; --muted:#8b93a1; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --text:#e5e7eb; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Segoe UI,system-ui,sans-serif; background:var(--bg); color:var(--text); }
+  header { padding:14px 20px; background:var(--panel); border-bottom:1px solid #262b36; display:flex; align-items:center; gap:12px; }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  .badge { font-size:11px; padding:2px 8px; border-radius:10px; background:#262b36; color:var(--muted); }
+  .layout { display:grid; grid-template-columns:320px 1fr; gap:16px; padding:16px; height:calc(100vh - 52px); }
+  .col { background:var(--panel); border:1px solid #262b36; border-radius:10px; padding:14px; overflow:auto; }
+  input, button { font:inherit; }
+  .search input { width:100%; padding:9px 11px; border-radius:8px; border:1px solid #2b323f; background:#0d1016; color:var(--text); }
+  .result { padding:8px 10px; border-radius:7px; cursor:pointer; border:1px solid transparent; }
+  .result:hover { background:#1e2430; border-color:#2b323f; }
+  .result small { color:var(--muted); }
+  .profile h2 { margin:2px 0 10px; font-size:18px; }
+  .kv { display:grid; grid-template-columns:130px 1fr; gap:6px 10px; font-size:13px; }
+  .kv div:nth-child(odd) { color:var(--muted); }
+  .pill { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+  .pill.active { background:rgba(34,197,94,.15); color:var(--ok); }
+  .pill.suspended, .pill.High { background:rgba(239,68,68,.15); color:var(--bad); }
+  .pill.Medium { background:rgba(245,158,11,.15); color:var(--warn); }
+  .pill.Low, .pill.cancelled { background:#262b36; color:var(--muted); }
+  .alerts { margin:12px 0; display:flex; flex-direction:column; gap:6px; }
+  .alert { font-size:12px; padding:8px 10px; border-radius:7px; border-left:3px solid; }
+  .alert.warn { background:rgba(245,158,11,.08); border-color:var(--warn); }
+  .alert.bad { background:rgba(239,68,68,.08); border-color:var(--bad); }
+  .alert.info { background:rgba(59,130,246,.08); border-color:var(--accent); }
+  .chat { display:flex; flex-direction:column; height:100%; }
+  .messages { flex:1; overflow:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px; }
+  .msg { padding:10px 12px; border-radius:9px; max-width:80%; white-space:pre-wrap; font-size:13px; line-height:1.45; }
+  .msg.user { align-self:flex-end; background:var(--accent); color:#fff; }
+  .msg.bot { align-self:flex-start; background:#1e2430; border:1px solid #2b323f; }
+  .composer { display:flex; gap:8px; margin-top:10px; }
+  .composer input { flex:1; padding:10px 12px; border-radius:8px; border:1px solid #2b323f; background:#0d1016; color:var(--text); }
+  .composer button { padding:10px 16px; border-radius:8px; border:0; background:var(--accent); color:#fff; cursor:pointer; }
+  .muted { color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📞 Telco Agent Desktop</h1>
+  <span class="badge" id="mode">…</span>
+  <span class="muted">Customer 360 hydrates on contact · chat routes to the Foundry orchestrator</span>
+</header>
+
+<div class="layout">
+  <div class="col search">
+    <div style="margin-bottom:10px">
+      <input id="q" placeholder="Search customer (name or ID)…" autocomplete="off" />
+    </div>
+    <div id="results"></div>
+  </div>
+
+  <div class="col" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    <div class="profile" id="profile"><p class="muted">Select a customer to load their 360 profile.</p></div>
+    <div class="chat">
+      <div class="messages" id="messages"></div>
+      <div class="composer">
+        <input id="chatInput" placeholder="Ask about billing, service, offers…" />
+        <button id="sendBtn">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let current = null;
+
+async function j(url, opts) { const r = await fetch(url, opts); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+
+(async () => {
+  try { const h = await j('/api/health'); document.getElementById('mode').textContent = 'data: ' + h.data_mode; }
+  catch { document.getElementById('mode').textContent = 'offline'; }
+})();
+
+const qEl = document.getElementById('q');
+let t; qEl.addEventListener('input', () => { clearTimeout(t); t = setTimeout(runSearch, 250); });
+
+async function runSearch() {
+  const q = qEl.value.trim(); if (!q) { document.getElementById('results').innerHTML = ''; return; }
+  try {
+    const { results } = await j('/api/search?q=' + encodeURIComponent(q));
+    document.getElementById('results').innerHTML = results.map(r =>
+      `<div class="result" onclick="loadProfile('${r.customer_id}')">
+         <div>${r.first_name} ${r.last_name}</div>
+         <small>${r.customer_id} · ${r.city||''} ${r.state||''} · ${r.account_status||''}</small>
+       </div>`).join('') || '<p class="muted">No matches.</p>';
+  } catch (e) { document.getElementById('results').innerHTML = '<p class="muted">Search error.</p>'; }
+}
+
+function val(p, k) { const v = p[k]; return (v === '' || v == null) ? '—' : v; }
+function truthy(v) { return v === true || v === 'True' || v === 1 || v === '1'; }
+
+async function loadProfile(id) {
+  current = id;
+  const p = await j('/api/profile/' + id);
+  const alerts = [];
+  if (truthy(p.last_invoice_is_first_bill) && !truthy(p.last_invoice_paid))
+    alerts.push(['warn', `Unpaid FIRST bill: $${val(p,'last_invoice_amount')} (activation + proration)`]);
+  if (String(p.risk_band).toLowerCase() === 'high')
+    alerts.push(['bad', `High churn risk — ${val(p,'churn_top_reason')}`]);
+  if (truthy(p.recent_outage_exposure))
+    alerts.push(['bad', 'Recent outage in customer area']);
+  if (p.top_crosssell_product)
+    alerts.push(['info', `Cross-sell: ${p.top_crosssell_product} (score ${val(p,'top_crosssell_score')})`]);
+
+  document.getElementById('profile').innerHTML = `
+    <h2>${p.first_name} ${p.last_name}
+      <span class="pill ${p.account_status}">${p.account_status||''}</span>
+      <span class="pill ${p.risk_band}">${p.risk_band||''} risk</span>
+    </h2>
+    <div class="alerts">${alerts.map(a => `<div class="alert ${a[0]}">${a[1]}</div>`).join('')}</div>
+    <div class="kv">
+      <div>Customer ID</div><div>${val(p,'customer_id')}</div>
+      <div>Segment</div><div>${val(p,'segment')}</div>
+      <div>Tenure</div><div>${val(p,'tenure_months')} months</div>
+      <div>Location</div><div>${val(p,'city')}, ${val(p,'state')} ${val(p,'zip')}</div>
+      <div>Products</div><div>${val(p,'product_list')}</div>
+      <div>Monthly (MRC)</div><div>$${val(p,'total_mrc')}</div>
+      <div>Open balance</div><div>$${val(p,'open_balance')}</div>
+      <div>Last invoice</div><div>$${val(p,'last_invoice_amount')} (${truthy(p.last_invoice_paid)?'paid':'unpaid'})</div>
+    </div>`;
+  addMsg('bot', `Loaded 360 profile for ${p.first_name} ${p.last_name}. How can I help this customer?`);
+}
+
+function addMsg(role, text) {
+  const d = document.createElement('div'); d.className = 'msg ' + role; d.textContent = text;
+  const m = document.getElementById('messages'); m.appendChild(d); m.scrollTop = m.scrollHeight;
+}
+
+async function send() {
+  const el = document.getElementById('chatInput'); const text = el.value.trim(); if (!text) return;
+  addMsg('user', text); el.value = '';
+  try {
+    const res = await j('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ message: text, customer_id: current }) });
+    addMsg('bot', res.reply);
+  } catch (e) { addMsg('bot', 'Error contacting the agent.'); }
+}
+document.getElementById('sendBtn').addEventListener('click', send);
+document.getElementById('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+</script>
+</body>
+</html>

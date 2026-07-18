@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-07-18T14:42:52.806132+00:00",
+  "customers": 1000,
+  "seed": 42,
+  "as_of_date": "2026-06-30",
+  "formats": [
+    "csv",
+    "parquet"
+  ],
+  "tables": {
+    "dim_geography": 60,
+    "fact_coverage": 138,
+    "dim_product": 4,
+    "dim_plan": 9,
+    "dim_device": 5,
+    "dim_promotion": 7,
+    "dim_customer": 1000,
+    "dim_account": 1000,
+    "fact_subscription": 1598,
+    "fact_invoice": 9673,
+    "fact_invoice_line": 16278,
+    "fact_usage_data": 27090,
+    "fact_usage_voice": 27090,
+    "fact_outage": 25,
+    "fact_service_metric": 12642,
+    "fact_work_order": 456,
+    "fact_appointment": 242,
+    "fact_contact": 1823,
+    "fact_offer": 516,
+    "fact_feedback": 404,
+    "ml_churn_score": 1000,
+    "ml_crosssell_reco": 873
+  },
+  "total_rows": 101933
+}

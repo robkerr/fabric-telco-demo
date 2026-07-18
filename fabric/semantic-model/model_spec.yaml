@@ -1,0 +1,118 @@
+# Direct Lake semantic model specification for the Telco demo.
+# Declarative + tool-agnostic. Consumed by create_semantic_model.py, and it doubles
+# as documentation of the model's tables, relationships, and measures.
+
+name: TelcoCustomerService
+lakehouse: TelcoLakehouse          # FABRIC_LAKEHOUSE_NAME
+mode: DirectLake
+
+# Gold tables to surface in the model.
+tables:
+  - dim_customer
+  - dim_account
+  - dim_geography
+  - dim_product
+  - dim_plan
+  - dim_promotion
+  - fact_subscription
+  - fact_invoice
+  - fact_invoice_line
+  - fact_usage_data
+  - fact_service_metric
+  - fact_outage
+  - fact_work_order
+  - fact_offer
+  - fact_feedback
+  - ml_churn_score
+  - ml_crosssell_reco
+  - customer_360
+
+# Relationships: (from_table.from_col) many -> one (to_table.to_col)
+relationships:
+  - from: dim_account.customer_id
+    to: dim_customer.customer_id
+  - from: dim_customer.geo_id
+    to: dim_geography.geo_id
+  - from: fact_subscription.account_id
+    to: dim_account.account_id
+  - from: fact_subscription.product_id
+    to: dim_product.product_id
+  - from: fact_subscription.plan_id
+    to: dim_plan.plan_id
+  - from: fact_invoice.account_id
+    to: dim_account.account_id
+  - from: fact_invoice_line.invoice_id
+    to: fact_invoice.invoice_id
+  - from: fact_usage_data.account_id
+    to: dim_account.account_id
+  - from: fact_service_metric.account_id
+    to: dim_account.account_id
+  - from: fact_outage.geo_id
+    to: dim_geography.geo_id
+  - from: fact_work_order.account_id
+    to: dim_account.account_id
+  - from: fact_offer.account_id
+    to: dim_account.account_id
+  - from: fact_offer.promotion_id
+    to: dim_promotion.promotion_id
+  - from: fact_feedback.account_id
+    to: dim_account.account_id
+  - from: ml_churn_score.customer_id
+    to: dim_customer.customer_id
+  - from: ml_crosssell_reco.account_id
+    to: dim_account.account_id
+
+# Business measures (DAX). Grouped on the fact tables.
+measures:
+  - table: dim_customer
+    name: Customer Count
+    expression: DISTINCTCOUNT(dim_customer[customer_id])
+    format: "#,0"
+  - table: dim_account
+    name: Active Accounts
+    expression: CALCULATE(DISTINCTCOUNT(dim_account[account_id]), dim_account[status] = "active")
+    format: "#,0"
+  - table: dim_account
+    name: Suspended Accounts
+    expression: CALCULATE(DISTINCTCOUNT(dim_account[account_id]), dim_account[status] = "suspended")
+    format: "#,0"
+  - table: fact_subscription
+    name: Monthly Recurring Revenue
+    expression: CALCULATE(SUM(fact_subscription[mrc]), fact_subscription[status] = "active")
+    format: "\\$#,0.00"
+  - table: fact_invoice
+    name: Total Billed
+    expression: SUM(fact_invoice[amount])
+    format: "\\$#,0.00"
+  - table: fact_invoice
+    name: Open Balance
+    expression: CALCULATE(SUM(fact_invoice[amount]), fact_invoice[paid] = FALSE())
+    format: "\\$#,0.00"
+  - table: fact_invoice
+    name: First Bill Count
+    expression: CALCULATE(COUNTROWS(fact_invoice), fact_invoice[is_first_bill] = TRUE())
+    format: "#,0"
+  - table: ml_churn_score
+    name: High Risk Customers
+    expression: CALCULATE(DISTINCTCOUNT(ml_churn_score[customer_id]), ml_churn_score[risk_band] = "High")
+    format: "#,0"
+  - table: ml_churn_score
+    name: Avg Churn Probability
+    expression: AVERAGE(ml_churn_score[churn_probability])
+    format: "0.0%"
+  - table: fact_service_metric
+    name: Avg Uptime Pct
+    expression: AVERAGE(fact_service_metric[uptime_pct])
+    format: "0.00"
+  - table: fact_feedback
+    name: Avg CSAT
+    expression: AVERAGE(fact_feedback[csat])
+    format: "0.0"
+  - table: fact_offer
+    name: Offer Acceptance Rate
+    expression: >
+      DIVIDE(
+        CALCULATE(COUNTROWS(fact_offer), fact_offer[status] = "accepted"),
+        COUNTROWS(fact_offer)
+      )
+    format: "0.0%"

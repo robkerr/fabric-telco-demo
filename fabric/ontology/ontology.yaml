@@ -1,0 +1,106 @@
+# Telco customer-service ontology.
+#
+# A shared business vocabulary that maps natural-language terms to the underlying data
+# model. It is used to (a) give the Fabric Data Agent and Foundry agents consistent
+# language, and (b) document the entities and metrics for humans. When Fabric's native
+# Ontology item is used, this file is the specification to author it from.
+
+domain: TelecommunicationsCustomerService
+
+entities:
+  Customer:
+    table: dim_customer
+    key: customer_id
+    synonyms: [subscriber, account holder, client]
+    describes: A residential telecom customer.
+    key_attributes: [first_name, last_name, segment, tenure_months, geo_id]
+
+  Account:
+    table: dim_account
+    key: account_id
+    synonyms: [billing account]
+    describes: A billing relationship owned by a customer.
+    states: [active, suspended, cancelled]
+    key_attributes: [status, open_date, autopay, credit_class, is_new_customer]
+
+  Product:
+    table: dim_product
+    key: product_id
+    synonyms: [service, line of business]
+    members: [internet, mobile, voice, tv]
+
+  Subscription:
+    table: fact_subscription
+    key: subscription_id
+    describes: A product instance a customer holds (with plan + device + MRC).
+
+  Invoice:
+    table: fact_invoice
+    key: invoice_id
+    synonyms: [bill, statement]
+    notes: "is_first_bill = true marks the customer's first invoice."
+
+  Outage:
+    table: fact_outage
+    key: outage_id
+    synonyms: [service disruption, downtime]
+    grain: per geography (geo_id)
+
+  ServiceMetric:
+    table: fact_service_metric
+    synonyms: [service health, performance, latency, uptime]
+    grain: per account per day
+
+  WorkOrder:
+    table: fact_work_order
+    key: work_order_id
+    synonyms: [ticket, service request, truck roll]
+
+  Offer:
+    table: fact_offer
+    key: offer_id
+    synonyms: [promotion, deal, discount]
+    references: dim_promotion
+
+  ChurnScore:
+    table: ml_churn_score
+    synonyms: [churn risk, attrition risk, retention risk]
+    bands: [Low, Medium, High]
+
+  CrossSellReco:
+    table: ml_crosssell_reco
+    synonyms: [upsell, next best offer, recommendation]
+
+  Customer360:
+    table: customer_360
+    synonyms: [profile, 360 view, single customer view]
+    describes: Denormalized per-customer serving object for profile hydration.
+
+# Canonical metrics (align to semantic-model measures).
+metrics:
+  monthly_recurring_revenue: SUM active fact_subscription.mrc
+  open_balance: SUM fact_invoice.amount WHERE paid = false
+  churn_probability: ml_churn_score.churn_probability
+  avg_uptime: AVG fact_service_metric.uptime_pct
+  csat: AVG fact_feedback.csat
+
+# Term -> meaning, to disambiguate NL queries.
+glossary:
+  "first bill": fact_invoice WHERE is_first_bill = true
+  "new customer": dim_account WHERE is_new_customer = true
+  "at risk": ml_churn_score WHERE risk_band = 'High'
+  "cross-sell candidate": ml_crosssell_reco rows (account lacks the recommended product)
+  "degraded service": fact_service_metric with low uptime_pct / high latency_ms
+  "past due": fact_invoice WHERE paid = false AND due_date < today
+
+# How ontology entities support each demo journey.
+journeys:
+  acquisition_and_crosssell:
+    entities: [Customer, Subscription, Product, CrossSellReco, Offer]
+    signal: fact_contact.handoff_to_agent = true (web -> agent handoff)
+  first_bill_support:
+    entities: [Invoice, Account, Subscription]
+    signal: fact_invoice.is_first_bill = true
+  service_degradation_and_retention:
+    entities: [Outage, ServiceMetric, WorkOrder, ChurnScore, Offer]
+    signal: recent Outage in customer geography + High churn risk

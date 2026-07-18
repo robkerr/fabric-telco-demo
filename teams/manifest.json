@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.17",
+  "version": "1.0.0",
+  "id": "REPLACE_WITH_ENTRA_APP_ID",
+  "developer": {
+    "name": "TelcoConnect",
+    "websiteUrl": "https://example.com",
+    "privacyUrl": "https://example.com/privacy",
+    "termsOfUseUrl": "https://example.com/terms"
+  },
+  "name": {
+    "short": "Telco Agent Desktop",
+    "full": "Telco Customer Service Agent Desktop"
+  },
+  "description": {
+    "short": "Customer 360 + AI assistant for telecom agents.",
+    "full": "Hydrates a Customer 360 profile from Microsoft Fabric and routes questions to the Foundry customer-service orchestrator agent."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#3B82F6",
+  "staticTabs": [
+    {
+      "entityId": "agentDesktop",
+      "name": "Agent Desktop",
+      "contentUrl": "https://REPLACE_WITH_WEBAPP_HOST/",
+      "websiteUrl": "https://REPLACE_WITH_WEBAPP_HOST/",
+      "scopes": ["personal"]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": ["REPLACE_WITH_WEBAPP_HOST"]
+}

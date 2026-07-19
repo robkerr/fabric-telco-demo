@@ -1,27 +1,30 @@
 """
-Deploy the Telco Foundry agents from foundry/agents/agents.yaml.
+Deploy the Telco Foundry journey agents from foundry/agents/agents.yaml.
 
-Creates the journey agents and the orchestrator in the Azure AI Foundry project, wiring:
-  - the Fabric Data Agent as a knowledge/tool source (via a project connection)
-  - Azure AI Search (Foundry IQ knowledge source)
-  - Web grounding (Web IQ)
-  - connected-agent delegation from the orchestrator to the journey agents
+Creates independent agents in the Foundry project (azure-ai-projects >= 2.x API), each with
+its own tools:
+  - the Fabric Data Agent  (MicrosoftFabricPreviewTool, via a project connection)
+  - Azure AI Search        (AzureAISearchTool / Foundry IQ knowledge source)
+  - Web grounding          (BingGroundingTool / Web IQ)
+
+Multi-agent orchestrator delegation is intentionally NOT wired here (the current SDK has no
+ConnectedAgentTool; that needs preview workflow/A2A APIs). Each journey agent stands alone.
 
 Environment (from repo .env):
-    FOUNDRY_PROJECT_ENDPOINT   Azure AI Foundry project endpoint
-    FOUNDRY_MODEL              optional model override (default from agents.yaml)
+    FOUNDRY_PROJECT_ENDPOINT   Foundry project endpoint
+    FOUNDRY_MODEL              model *deployment* name (e.g. gpt-4.1)
     FABRIC_CONNECTION_NAME     project connection name for the Fabric data agent
     AI_SEARCH_CONNECTION_NAME  project connection name for Azure AI Search
     AI_SEARCH_INDEX            search index name (default 'telco-knowledge')
     BING_CONNECTION_NAME       optional Bing grounding connection for Web IQ
-    FABRIC_WORKSPACE_ID / DATA_AGENT_ARTIFACT_ID  used to describe the Fabric source
 
-Because the Foundry agent SDK surface evolves and some tools require connections that are
-created in the portal, tool attachment is best-effort: missing pieces are logged and the
-agents are still created. Agent IDs are written to foundry/agents.generated.json.
+IMPORTANT: the Fabric data agent tool uses identity passthrough (On-Behalf-Of) and does NOT
+support service principals. Run this signed in as a *user* (az login) who has access to the
+Fabric data agent and its data sources.
 
-Docs: https://learn.microsoft.com/azure/ai-foundry/agents/
-      https://learn.microsoft.com/azure/ai-foundry/agents/how-to/tools/fabric
+Agent name/id/version are written to foundry/agents.generated.json.
+
+Docs: https://learn.microsoft.com/azure/foundry/agents/how-to/tools/fabric
 """
 from __future__ import annotations
 
@@ -48,143 +51,124 @@ def load_env_file(path: Path) -> None:
             os.environ.setdefault(k.strip(), v.strip().strip('"'))
 
 
-def get_connection_id(project, name):
+def resolve_connection_id(project, name, label):
+    """Return a project connection's resource id by name, or None (logged)."""
     if not name:
+        print(f"  - {label}: no connection name set; skipping.")
         return None
     try:
-        for conn in project.connections.list():
-            if getattr(conn, "name", None) == name:
-                return getattr(conn, "id", None)
+        conn = project.connections.get(name)
+        cid = getattr(conn, "id", None)
+        if cid:
+            print(f"  + {label}: resolved connection '{name}'.")
+            return cid
+        print(f"  ! {label}: connection '{name}' has no id; skipping.")
     except Exception as ex:  # noqa: BLE001
-        print(f"  (connection lookup failed: {ex})")
+        print(f"  ! {label}: could not resolve connection '{name}' ({ex}); skipping.")
     return None
 
 
-def build_tools(project, tool_keys, ctx):
-    """Return (tools, tool_resources_notes). Best-effort across SDK versions."""
+def build_tools(tool_keys, ctx):
+    """Build a list of tool objects for the given tool keys, best-effort."""
+    from azure.ai.projects.models import (
+        MicrosoftFabricPreviewTool, FabricDataAgentToolParameters, ToolProjectConnection,
+        AzureAISearchTool, AzureAISearchToolResource, AISearchIndexResource,
+        BingGroundingTool, BingGroundingSearchToolParameters, BingGroundingSearchConfiguration,
+    )
     tools = []
     for key in tool_keys:
-        if key == "fabric_data_agent":
-            _add_fabric_tool(project, tools, ctx)
-        elif key == "azure_ai_search":
-            _add_search_tool(project, tools, ctx)
-        elif key == "web":
-            _add_web_tool(project, tools, ctx)
-        # connected_agents handled by caller (needs created journey ids)
+        if key == "fabric_data_agent" and ctx.get("fabric_conn_id"):
+            tools.append(MicrosoftFabricPreviewTool(
+                fabric_dataagent_preview=FabricDataAgentToolParameters(
+                    project_connections=[ToolProjectConnection(
+                        project_connection_id=ctx["fabric_conn_id"])])))
+            print("    + Fabric data agent tool")
+        elif key == "azure_ai_search" and ctx.get("search_conn_id"):
+            tools.append(AzureAISearchTool(
+                azure_ai_search=AzureAISearchToolResource(
+                    indexes=[AISearchIndexResource(
+                        project_connection_id=ctx["search_conn_id"],
+                        index_name=ctx["search_index"])])))
+            print("    + Azure AI Search tool")
+        elif key == "web" and ctx.get("bing_conn_id"):
+            tools.append(BingGroundingTool(
+                bing_grounding=BingGroundingSearchToolParameters(
+                    search_configurations=[BingGroundingSearchConfiguration(
+                        project_connection_id=ctx["bing_conn_id"])])))
+            print("    + Web (Bing grounding) tool")
+        elif key in ("fabric_data_agent", "azure_ai_search", "web"):
+            print(f"    - {key}: connection unavailable; tool skipped")
     return tools
-
-
-def _add_fabric_tool(project, tools, ctx):
-    conn_id = get_connection_id(project, os.environ.get("FABRIC_CONNECTION_NAME"))
-    try:
-        from azure.ai.agents.models import FabricTool
-        if conn_id:
-            tools.extend(FabricTool(connection_id=conn_id).definitions)
-            print("  + Fabric data agent tool attached")
-            return
-    except Exception as ex:  # noqa: BLE001
-        print(f"  (Fabric tool unavailable: {ex})")
-    print("  ! Fabric tool NOT attached. Create a Foundry connection to the Fabric data "
-          f"agent (workspace {ctx.get('workspace_id')}, artifact {ctx.get('artifact_id')}) "
-          "and set FABRIC_CONNECTION_NAME in .env, then re-run.")
-
-
-def _add_search_tool(project, tools, ctx):
-    conn_id = get_connection_id(project, os.environ.get("AI_SEARCH_CONNECTION_NAME"))
-    index = os.environ.get("AI_SEARCH_INDEX", "telco-knowledge")
-    try:
-        from azure.ai.agents.models import AzureAISearchTool
-        if conn_id:
-            tools.extend(AzureAISearchTool(index_connection_id=conn_id, index_name=index).definitions)
-            print("  + Azure AI Search tool attached")
-            return
-    except Exception as ex:  # noqa: BLE001
-        print(f"  (Search tool unavailable: {ex})")
-    print("  ! Azure AI Search tool NOT attached. Create a Foundry connection to AI Search "
-          "and set AI_SEARCH_CONNECTION_NAME + AI_SEARCH_INDEX in .env.")
-
-
-def _add_web_tool(project, tools, ctx):
-    conn_id = get_connection_id(project, os.environ.get("BING_CONNECTION_NAME"))
-    try:
-        from azure.ai.agents.models import BingGroundingTool
-        if conn_id:
-            tools.extend(BingGroundingTool(connection_id=conn_id).definitions)
-            print("  + Web (Bing grounding) tool attached")
-            return
-    except Exception as ex:  # noqa: BLE001
-        print(f"  (Web tool unavailable: {ex})")
-    print("  ! Web IQ tool NOT attached (optional). Set BING_CONNECTION_NAME to enable.")
 
 
 def main() -> int:
     load_env_file(REPO / ".env")
     endpoint = os.environ.get("FOUNDRY_PROJECT_ENDPOINT")
     if not endpoint:
-        print("ERROR: FOUNDRY_PROJECT_ENDPOINT not set (run infra/deploy.ps1 first).",
-              file=sys.stderr)
+        print("ERROR: FOUNDRY_PROJECT_ENDPOINT not set (Phase 2).", file=sys.stderr)
         return 1
 
     spec = yaml.safe_load(SPEC.read_text(encoding="utf-8"))
-    model = os.environ.get("FOUNDRY_MODEL", spec.get("model", "gpt-4o"))
-    ctx = {
-        "workspace_id": os.environ.get("FABRIC_WORKSPACE_ID"),
-        "artifact_id": os.environ.get("DATA_AGENT_ARTIFACT_ID"),
-    }
+    model = os.environ.get("FOUNDRY_MODEL", spec.get("model", "gpt-4.1"))
 
     from azure.ai.projects import AIProjectClient
+    from azure.ai.projects.models import PromptAgentDefinition
     from azure.identity import DefaultAzureCredential
 
     project = AIProjectClient(endpoint=endpoint, credential=DefaultAzureCredential())
 
+    print("Resolving project connections...")
+    ctx = {
+        "fabric_conn_id": resolve_connection_id(
+            project, os.environ.get("FABRIC_CONNECTION_NAME"), "Fabric"),
+        "search_conn_id": resolve_connection_id(
+            project, os.environ.get("AI_SEARCH_CONNECTION_NAME"), "AI Search"),
+        "bing_conn_id": resolve_connection_id(
+            project, os.environ.get("BING_CONNECTION_NAME"), "Web/Bing"),
+        "search_index": os.environ.get("AI_SEARCH_INDEX", "telco-knowledge"),
+    }
+
+    # Create the journey agents (independent; no orchestrator delegation).
     created = {}
-    orchestrator_spec = None
-
-    # 1. Create journey agents first.
     for a in spec["agents"]:
-        if a["role"] == "orchestrator":
-            orchestrator_spec = a
+        if a.get("role") != "journey":
             continue
-        print(f"Creating agent {a['name']} ...")
-        tools = build_tools(project, a.get("tools", []), ctx)
-        agent = project.agents.create_agent(
-            model=model, name=a["name"], instructions=a["instructions"], tools=tools or None)
-        created[a["name"]] = agent.id
-        print(f"  -> {agent.id}")
+        name = a["name"]
+        print(f"\nCreating agent {name} (model={model}) ...")
+        tools = build_tools(a.get("tools", []), ctx)
+        try:
+            version = project.agents.create_version(
+                agent_name=name,
+                definition=PromptAgentDefinition(
+                    model=model,
+                    instructions=a["instructions"],
+                    tools=tools or None,
+                ),
+            )
+            created[name] = {"id": getattr(version, "id", None),
+                             "version": getattr(version, "version", None)}
+            print(f"  -> id={created[name]['id']} version={created[name]['version']}")
+        except Exception as ex:  # noqa: BLE001
+            print(f"  ! failed to create {name}: {ex}")
 
-    # 2. Create the orchestrator with connected-agent tools.
-    if orchestrator_spec:
-        print(f"Creating orchestrator {orchestrator_spec['name']} ...")
-        tools = build_tools(project, orchestrator_spec.get("tools", []), ctx)
-        _add_connected_agents(tools, orchestrator_spec.get("connected_agents", []), created, spec)
-        agent = project.agents.create_agent(
-            model=model, name=orchestrator_spec["name"],
-            instructions=orchestrator_spec["instructions"], tools=tools or None)
-        created[orchestrator_spec["name"]] = agent.id
-        print(f"  -> {agent.id}")
+    if created:
+        OUT.write_text(json.dumps(created, indent=2), encoding="utf-8")
+        print(f"\nCreated {len(created)} agent(s). Details written to {OUT.name}.")
+    else:
+        print("\nNo agents were created.")
+        return 1
 
-    OUT.write_text(json.dumps(created, indent=2), encoding="utf-8")
-    print(f"\nCreated {len(created)} agents. IDs saved to {OUT.name}:")
-    for name, aid in created.items():
-        print(f"  {name}: {aid}")
+    # Retire legacy agent names (e.g. renamed to the telco_ prefix). Best-effort.
+    retire = [n for n in spec.get("retire", []) if n not in created]
+    if retire:
+        print("\nRetiring legacy agents...")
+        for name in retire:
+            try:
+                project.agents.delete(agent_name=name)
+                print(f"  - deleted {name}")
+            except Exception as ex:  # noqa: BLE001
+                print(f"  . skip {name} ({ex})")
     return 0
-
-
-def _add_connected_agents(tools, names, created, spec):
-    try:
-        from azure.ai.agents.models import ConnectedAgentTool
-    except Exception as ex:  # noqa: BLE001
-        print(f"  (ConnectedAgentTool unavailable: {ex}; orchestrator will not auto-delegate)")
-        return
-    desc = {a["name"]: a.get("instructions", "")[:120] for a in spec["agents"]}
-    for name in names:
-        aid = created.get(name)
-        if not aid:
-            print(f"  ! connected agent {name} not created; skipping")
-            continue
-        tools.extend(ConnectedAgentTool(
-            id=aid, name=name, description=desc.get(name, name)).definitions)
-        print(f"  + connected agent: {name}")
 
 
 if __name__ == "__main__":

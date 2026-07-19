@@ -6,7 +6,7 @@ Endpoints:
   GET  /api/health            -> mode (live/local)
   GET  /api/search?q=...      -> customer lookup
   GET  /api/profile/{id}      -> customer_360 profile (fetch-on-contact)
-  POST /api/chat              -> route a message to the Foundry orchestrator
+  POST /api/chat              -> auto-route a message to the best Foundry journey agent
 
 Run locally:
   uvicorn main:app --reload --port 8000   (from the app/ folder)
@@ -45,7 +45,24 @@ class ChatRequest(BaseModel):
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "data_mode": data_access.mode()}
+    return {
+        "status": "ok",
+        "data_mode": data_access.mode(),
+        "tracing": bool(os.environ.get("APPLICATIONINSIGHTS_CONNECTION_STRING")),
+        "app_insights": os.environ.get("APP_INSIGHTS_NAME"),
+    }
+
+
+class RouteRequest(BaseModel):
+    message: str
+    customer_id: str | None = None
+
+
+@app.post("/api/route")
+def route_preview(req: RouteRequest):
+    """Fast routing decision (no agent call) so the UI can show what it will do."""
+    prof = data_access.get_profile(req.customer_id) if req.customer_id else None
+    return agent_client.route_detail(req.message, prof)
 
 
 @app.get("/api/search")
@@ -59,6 +76,14 @@ def profile(customer_id: str):
     if not p:
         raise HTTPException(status_code=404, detail="Customer not found")
     return p
+
+
+@app.get("/api/account/{customer_id}")
+def account(customer_id: str):
+    d = data_access.get_account_detail(customer_id)
+    if not d:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return d
 
 
 @app.post("/api/chat")

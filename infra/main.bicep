@@ -15,12 +15,15 @@ param tenantId string = subscription().tenantId
 @description('Deploy a chat model into the Foundry account.')
 param deployModel bool = true
 
-@description('Model to deploy for the agents.')
-param modelName string = 'gpt-4o'
-param modelVersion string = '2024-11-20'
+@description('Model to deploy for the agents. gpt-4.1 supports the Agent Service tools (Fabric/AI Search/Bing); the gpt-5 family does not in westus3.')
+param modelName string = 'gpt-4.1'
+param modelVersion string = '2025-04-14'
 
 @description('Optional Fabric SQL analytics endpoint for the web app (customer_360 fetch).')
 param fabricSqlEndpoint string = ''
+
+@description('Create RBAC role assignments (Foundry->Search, WebApp->Key Vault). Requires the deployer to have Owner or User Access Administrator. Set false if you only have Contributor.')
+param deployRoleAssignments bool = true
 
 var suffix = uniqueString(resourceGroup().id)
 var storageName = toLower('telco${suffix}')
@@ -85,7 +88,7 @@ module appService 'modules/appservice.bicep' = {
   }
 }
 
-module rbac 'modules/rbac.bicep' = {
+module rbac 'modules/rbac.bicep' = if (deployRoleAssignments) {
   name: 'rbac'
   params: {
     searchName: search.outputs.searchName

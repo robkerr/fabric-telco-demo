@@ -14,6 +14,13 @@ resource search 'Microsoft.Search/searchServices@2024-06-01-preview' = {
     hostingMode: 'default'
     semanticSearch: 'free'
     publicNetworkAccess: 'enabled'
+    // Enable AAD/RBAC for the data plane (indexes, documents) while keeping API keys.
+    // Required for both the Foundry managed identity and users to use role-based access.
+    authOptions: {
+      aadOrApiKey: {
+        aadAuthFailureMode: 'http403'
+      }
+    }
   }
 }
 

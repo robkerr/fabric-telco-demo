@@ -10,6 +10,8 @@
 param(
     [string]$ResourceGroup,
     [string]$Location,
+    [switch]$SkipRoleAssignments,
+    [switch]$SkipModel,
     [switch]$WhatIf
 )
 $ErrorActionPreference = 'Stop'
@@ -30,6 +32,8 @@ az group create --name $ResourceGroup --location $Location --only-show-errors | 
 $bicep = Join-Path $root 'infra\main.bicep'
 $params = @("location=$Location")
 if ($env.FABRIC_SQL_ENDPOINT) { $params += "fabricSqlEndpoint=$($env.FABRIC_SQL_ENDPOINT)" }
+if ($SkipRoleAssignments) { $params += 'deployRoleAssignments=false' }
+if ($SkipModel) { $params += 'deployModel=false' }
 
 if ($WhatIf) {
     Write-Host '== what-if ==' -ForegroundColor Cyan

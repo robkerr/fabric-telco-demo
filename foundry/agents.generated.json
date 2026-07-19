@@ -1,0 +1,14 @@
+{
+  "telco-BillingFirstBillAgent": {
+    "id": "telco-BillingFirstBillAgent:2",
+    "version": "2"
+  },
+  "telco-CrossSellAgent": {
+    "id": "telco-CrossSellAgent:2",
+    "version": "2"
+  },
+  "telco-ServiceRetentionAgent": {
+    "id": "telco-ServiceRetentionAgent:2",
+    "version": "2"
+  }
+}

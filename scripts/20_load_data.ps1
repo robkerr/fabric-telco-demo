@@ -72,3 +72,5 @@ Write-Host 'Next:' -ForegroundColor Green
 Write-Host '  1) ./scripts/verify_customer360.ps1'
 Write-Host '  2) In Fabric, open the "05_create_data_agent" notebook, attach the Lakehouse,'
 Write-Host '     Run all, then copy DATA_AGENT_ARTIFACT_ID + DATA_AGENT_MCP_ENDPOINT into .env.'
+Write-Host '  3) (Optional) Build the semantic model + ontology in Fabric - see'
+Write-Host '     fabric/semantic-model/README.md and fabric/ontology/README.md (manual, portal).'

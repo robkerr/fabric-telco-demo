@@ -1,14 +1,59 @@
 # Foundry Agents (Phase 3)
 
-The agent platform: an **orchestrator** plus three **journey agents**, grounded in the
-Fabric Data Agent and Foundry IQ knowledge sources.
+Three **independent journey agents**, each grounded in the Fabric Data Agent and Foundry IQ
+knowledge sources:
 
 ```
-TelcoOrchestrator
-├─ BillingFirstBillAgent      (first-bill support)      -> Fabric Data Agent
-├─ CrossSellAgent            (acquisition + cross-sell) -> Fabric Data Agent + AI Search + Web
-└─ ServiceRetentionAgent     (degradation + retention)  -> Fabric Data Agent + Web
+telco-BillingFirstBillAgent      (first-bill support)      -> Fabric Data Agent
+telco-CrossSellAgent             (acquisition + cross-sell) -> Fabric Data Agent + AI Search + Web
+telco-ServiceRetentionAgent      (degradation + retention)  -> Fabric Data Agent + Web
 ```
+
+> Note: automatic orchestrator/connected-agent delegation is **not** wired. The current Foundry
+> SDK (`azure-ai-projects` 2.x) has no `ConnectedAgentTool` — multi-agent orchestration needs the
+> preview workflow/A2A APIs. Each agent stands alone and can be invoked directly.
+
+## Prerequisites
+
+- **Sign in as a user** (`az login`). The Fabric data agent tool uses identity passthrough
+  (On-Behalf-Of) and does **not** support service principals. The signed-in user needs access to
+  the Fabric data agent and its data sources.
+- The tool **connections** below must exist in the project and their names set in `.env`.
+
+## Required Foundry resources (what the next dev must have)
+
+This demo **reused an existing Azure AI Foundry resource group and project** rather than
+deploying a new one. To run `deploy_agents.ps1` against your own environment, you need:
+
+1. **An Azure AI Foundry project** (a project on an AI Foundry / AIServices account). Put its
+   endpoint in `.env` as `FOUNDRY_PROJECT_ENDPOINT`
+   (`https://<account>.services.ai.azure.com/api/projects/<project>`).
+2. **A `gpt-4.1` model deployment** on that project's account, named `gpt-4.1`
+   (`.env` `FOUNDRY_MODEL=gpt-4.1`). ⚠️ The Agent Service tools (Fabric / AI Search / Bing)
+   are **not supported on the gpt-5 family in westus3** — use gpt-4.1 (or gpt-4o).
+   Deploy with:
+   ```powershell
+   az cognitiveservices account deployment create -g <rg> -n <account> `
+     --deployment-name gpt-4.1 --model-name gpt-4.1 --model-version 2025-04-14 `
+     --model-format OpenAI --sku-name GlobalStandard --sku-capacity 50
+   ```
+3. **Three project connections** (create in the Foundry portal), names recorded in `.env`:
+   - **Microsoft Fabric** connection to your published data agent (`FABRIC_CONNECTION_NAME`).
+     It's a "Custom Keys" connection holding `workspace-id` = `FABRIC_WORKSPACE_ID` and
+     `artifact-id` = `DATA_AGENT_ARTIFACT_ID`.
+   - **Azure AI Search** connection to your search service (`AI_SEARCH_CONNECTION_NAME`), with
+     the `telco-knowledge` index built by `foundry/setup_knowledge.py`.
+   - **Bing grounding** connection for Web IQ (`BING_CONNECTION_NAME`, optional).
+4. **The Fabric Data Agent published** (Phase 1) in the **same Entra tenant** as Foundry.
+5. Your **user identity** has access to the Foundry project, the Fabric data agent, and its
+   data sources (OBO).
+
+Optional: run `foundry/setup_tracing.ps1` to provision + connect Application Insights so agent
+runs are traced (see "Tracing / observability" below).
+
+If you're standing up fresh Azure resources instead of reusing some, `infra/` contains Bicep
+that provisions a Foundry account+project, AI Search, Key Vault, and Log Analytics — see
+[`../infra/`](../infra).
 
 ## Deploy
 
@@ -17,8 +62,9 @@ az login
 ./foundry/deploy_agents.ps1
 ```
 
-This creates the agents in the Foundry project (`FOUNDRY_PROJECT_ENDPOINT`) from
-[`agents/agents.yaml`](agents/agents.yaml) and writes their IDs to `agents.generated.json`.
+Creates the agents in the project (`FOUNDRY_PROJECT_ENDPOINT`) from
+[`agents/agents.yaml`](agents/agents.yaml) via `project.agents.create_version(...)`, and writes
+their name/id/version to `agents.generated.json`.
 
 ## Connections (set these up once, then re-run deploy)
 
@@ -38,20 +84,39 @@ must be **published** (Phase 1) and in the **same Entra tenant** as Foundry (on-
 ## Foundry IQ knowledge source (product literature / KB)
 
 [`knowledge/`](knowledge) holds sample product literature. To use it as a Foundry IQ
-knowledge source, create the Azure AI Search index and upload the docs:
+knowledge source, install the Foundry Python deps, then create the Azure AI Search index and
+upload the docs:
 
 ```powershell
+./.venv/Scripts/python -m pip install -r foundry/requirements.txt
 ./.venv/Scripts/python foundry/setup_knowledge.py
 ```
 
 Then create an AI Search connection in the Foundry project and set `AI_SEARCH_CONNECTION_NAME`.
 
+## Tracing / observability
+
+Enable end-to-end tracing of agent runs in the portal (**your project > Tracing**):
+
+```powershell
+az login
+./foundry/setup_tracing.ps1
+```
+
+This idempotently provisions a **workspace-based Application Insights** resource (backed by the
+Log Analytics workspace in the resource group), connects it to the Foundry project as an
+`AppInsights` connection, and writes `APP_INSIGHTS_NAME` +
+`APPLICATIONINSIGHTS_CONNECTION_STRING` to `.env`. A project allows only **one** AppInsights
+connection, so re-running reuses the existing one. Run an agent, then refresh the Tracing tab
+(traces can take 1–3 minutes to appear). The connection string is also emitted for optional
+client-side (web app) OpenTelemetry export.
+
 ## How the journeys use the agents
 
 | Journey | Agent | Data grounding |
 |---|---|---|
-| First-bill support | BillingFirstBillAgent | invoices, invoice lines, subscriptions |
-| Acquisition + cross-sell | CrossSellAgent | subscriptions, `ml_crosssell_reco`, promotions, product docs |
-| Degradation + retention | ServiceRetentionAgent | outages, service metrics, work orders, `ml_churn_score`, offers |
+| First-bill support | telco-BillingFirstBillAgent | invoices, invoice lines, subscriptions |
+| Acquisition + cross-sell | telco-CrossSellAgent | subscriptions, `ml_crosssell_reco`, promotions, product docs |
+| Degradation + retention | telco-ServiceRetentionAgent | outages, service metrics, work orders, `ml_churn_score`, offers |
 
 See [`../docs/architecture.md`](../docs/architecture.md) for the full picture.

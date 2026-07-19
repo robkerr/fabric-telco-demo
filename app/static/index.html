@@ -3,358 +3,488 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Telco Agent Desktop</title>
+<title>Contoso Telecom — Care Console</title>
 <style>
-  :root { --bg:#0f1115; --panel:#171a21; --accent:#3b82f6; --muted:#8b93a1; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --text:#e5e7eb; --line:#262b36; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:Segoe UI,system-ui,sans-serif; background:var(--bg); color:var(--text); }
-  header { padding:14px 20px; background:var(--panel); border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
-  header h1 { font-size:16px; margin:0; font-weight:600; }
-  .badge { font-size:11px; padding:2px 8px; border-radius:10px; background:var(--line); color:var(--muted); }
-  .spacer { flex:1; }
-  .btn { font:inherit; font-size:12px; padding:6px 12px; border-radius:8px; border:1px solid var(--line); background:#0d1016; color:var(--text); cursor:pointer; }
-  .btn:hover { border-color:#3a4252; }
-  .btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
-  .layout { display:grid; grid-template-columns:320px 1fr; gap:16px; padding:16px; height:calc(100vh - 52px); }
-  .col { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; overflow:auto; }
-  input, button { font:inherit; }
-  .search input { width:100%; padding:9px 11px; border-radius:8px; border:1px solid #2b323f; background:#0d1016; color:var(--text); }
-  .result { padding:8px 10px; border-radius:7px; cursor:pointer; border:1px solid transparent; }
-  .result:hover { background:#1e2430; border-color:#2b323f; }
-  .result small { color:var(--muted); }
-  .profile h2 { margin:2px 0 10px; font-size:18px; }
-  .kv { display:grid; grid-template-columns:130px 1fr; gap:6px 10px; font-size:13px; }
-  .kv div:nth-child(odd) { color:var(--muted); }
-  .pill { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
-  .pill.active { background:rgba(34,197,94,.15); color:var(--ok); }
-  .pill.suspended, .pill.High { background:rgba(239,68,68,.15); color:var(--bad); }
-  .pill.Medium { background:rgba(245,158,11,.15); color:var(--warn); }
-  .pill.Low, .pill.cancelled { background:var(--line); color:var(--muted); }
-  .alerts { margin:12px 0; display:flex; flex-direction:column; gap:6px; }
-  .alert { font-size:12px; padding:8px 10px; border-radius:7px; border-left:3px solid; }
-  .alert.warn { background:rgba(245,158,11,.08); border-color:var(--warn); }
-  .alert.bad { background:rgba(239,68,68,.08); border-color:var(--bad); }
-  .alert.info { background:rgba(59,130,246,.08); border-color:var(--accent); }
-  .chat { display:flex; flex-direction:column; height:100%; }
-  .messages { flex:1; overflow:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px; }
-  .msg { padding:10px 12px; border-radius:9px; max-width:82%; white-space:pre-wrap; font-size:13px; line-height:1.45; }
-  .msg.user { align-self:flex-end; background:var(--accent); color:#fff; }
-  .msg.bot { align-self:flex-start; background:#1e2430; border:1px solid #2b323f; }
-  .msg .agenttag { font-size:11px; color:var(--muted); margin-bottom:4px; font-weight:600; display:flex; align-items:center; gap:6px; }
-  .msg .metaline { font-size:11px; color:var(--muted); margin-top:6px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-  .msg .inspect { cursor:pointer; color:var(--accent); text-decoration:underline; }
-  .status { font-size:12px; color:var(--muted); min-height:18px; display:flex; align-items:center; gap:8px; margin:6px 2px 0; }
-  .dot { width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block; }
-  .dot.busy { background:var(--warn); animation:pulse 1s infinite; }
-  .dot.idle { background:var(--ok); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-  .typing { display:inline-flex; gap:3px; }
-  .typing i { width:5px; height:5px; border-radius:50%; background:var(--muted); animation:bounce 1.2s infinite; }
-  .typing i:nth-child(2){ animation-delay:.2s } .typing i:nth-child(3){ animation-delay:.4s }
-  @keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-4px);opacity:1} }
-  .composer { display:flex; gap:8px; margin-top:8px; }
-  .composer input { flex:1; padding:10px 12px; border-radius:8px; border:1px solid #2b323f; background:#0d1016; color:var(--text); }
-  .composer input:disabled { opacity:.5; }
-  .composer button { padding:10px 16px; border-radius:8px; border:0; background:var(--accent); color:#fff; cursor:pointer; }
-  .composer button:disabled { opacity:.5; cursor:not-allowed; }
-  .muted { color:var(--muted); font-size:12px; }
+  :root{
+    --bg:#eef1f8; --card:#ffffff; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0;
+    --primary:#4f46e5; --primary-d:#3730a3; --sky:#0ea5e9; --teal:#14b8a6;
+    --ok:#16a34a; --warn:#d97706; --bad:#dc2626; --violet:#7c3aed;
+    --shadow:0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.04);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink);}
+  /* Header */
+  header{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:16px;
+    padding:0 20px;height:58px;color:#fff;
+    background:linear-gradient(90deg,var(--primary-d),var(--primary) 55%,#6366f1);
+    box-shadow:0 2px 8px rgba(30,27,75,.25);}
+  header .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;white-space:nowrap;}
+  header .brand .logo{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.18);
+    display:grid;place-items:center;font-size:15px;}
+  .spacer{flex:1;}
+  .hbadge{font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.16);color:#e0e7ff;}
+  .hbadge b{color:#fff;}
+  .hbtn{font:inherit;font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.25);
+    background:rgba(255,255,255,.10);color:#fff;cursor:pointer;}
+  .hbtn:hover{background:rgba(255,255,255,.2);}
+  .hbtn.active{background:#fff;color:var(--primary-d);border-color:#fff;}
+  /* Header search */
+  .hsearch{position:relative;width:min(520px,42vw);}
+  .hsearch .field{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:7px 12px;cursor:text;transition:.15s;}
+  .hsearch .field:focus-within{background:#fff;}
+  .hsearch .field:focus-within input{color:var(--ink);}
+  .hsearch .field:focus-within .mag{color:var(--primary);}
+  .hsearch .mag{color:#e0e7ff;font-size:14px;}
+  .hsearch input{flex:1;border:0;outline:0;background:transparent;color:#fff;font:inherit;font-size:13px;}
+  .hsearch input::placeholder{color:#dbe2ff;}
+  .hdrop{position:absolute;top:44px;left:0;right:0;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.18);overflow:hidden;display:none;max-height:60vh;overflow-y:auto;}
+  .hdrop.open{display:block;}
+  .hresult{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;}
+  .hresult:last-child{border-bottom:0;}
+  .hresult:hover{background:#f1f5ff;}
+  .hresult .ava{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:600;flex:none;}
+  .hresult .nm{color:var(--ink);font-weight:600;font-size:13px;}
+  .hresult .sub{color:var(--muted);font-size:11px;}
+  .hdrop .hint{padding:12px 14px;color:var(--muted);font-size:12px;}
+  /* Layout */
+  main{padding:18px;}
+  .empty{display:grid;place-items:center;height:calc(100vh - 100px);text-align:center;color:var(--muted);}
+  .empty .big{font-size:44px;margin-bottom:8px;}
+  .grid{display:grid;grid-template-columns:1fr 400px;gap:18px;align-items:start;}
+  .stack{display:flex;flex-direction:column;gap:16px;min-width:0;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);}
+  .card .hd{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);font-weight:600;font-size:13px;}
+  .card .hd .ic{font-size:14px;}
+  .card .bd{padding:14px 16px;}
+  .muted{color:var(--muted);font-size:12px;}
+  /* Customer banner */
+  .banner{display:flex;gap:16px;align-items:center;padding:16px 18px;}
+  .banner .ava{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:#fff;font-size:20px;font-weight:700;flex:none;}
+  .banner .who h2{margin:0 0 4px;font-size:20px;}
+  .banner .who .line{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;}
+  .banner .gauge{margin-left:auto;text-align:center;}
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+  .pill.active{background:#dcfce7;color:#15803d;} .pill.suspended,.pill.cancelled{background:#fee2e2;color:#b91c1c;}
+  .pill.High{background:#fee2e2;color:#b91c1c;} .pill.Medium{background:#fef3c7;color:#b45309;} .pill.Low{background:#dcfce7;color:#15803d;}
+  .pill.seg{background:#e0e7ff;color:#4338ca;}
+  /* KPI tiles */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--primary);}
+  .kpi.teal::before{background:var(--teal);} .kpi.sky::before{background:var(--sky);} .kpi.violet::before{background:var(--violet);} .kpi.amber::before{background:var(--warn);}
+  .kpi .lab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .kpi .num{font-size:22px;font-weight:700;margin-top:3px;}
+  .kpi .sub{font-size:11px;color:var(--muted);margin-top:1px;}
+  /* Alerts */
+  .alerts{display:flex;flex-direction:column;gap:8px;}
+  .alert{font-size:12.5px;padding:9px 12px;border-radius:9px;border-left:4px solid;display:flex;gap:8px;align-items:flex-start;}
+  .alert.warn{background:#fffbeb;border-color:var(--warn);color:#92400e;}
+  .alert.bad{background:#fef2f2;border-color:var(--bad);color:#991b1b;}
+  .alert.info{background:#eff6ff;border-color:var(--sky);color:#075985;}
+  .alert.ok{background:#f0fdf4;border-color:var(--ok);color:#166534;}
+  /* Tables */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);}
+  td{padding:8px 10px;border-bottom:1px solid #f1f5f9;}
+  tr:last-child td{border-bottom:0;}
+  .tbl-wrap{max-height:260px;overflow:auto;}
+  .tag{display:inline-block;padding:1px 8px;border-radius:6px;font-size:11px;font-weight:600;}
+  .tag.paid{background:#dcfce7;color:#15803d;} .tag.unpaid{background:#fee2e2;color:#b91c1c;}
+  .tag.first{background:#e0e7ff;color:#4338ca;}
+  .tag.open{background:#fef3c7;color:#b45309;} .tag.closed{background:#e2e8f0;color:#475569;} .tag.inprogress{background:#dbeafe;color:#1d4ed8;}
+  .tag.P1{background:#fee2e2;color:#b91c1c;} .tag.P2{background:#fef3c7;color:#b45309;} .tag.P3{background:#e2e8f0;color:#475569;}
+  .num-c{text-align:right;font-variant-numeric:tabular-nums;}
+  /* Charts */
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .chart-sum{display:flex;gap:18px;margin-bottom:8px;}
+  .chart-sum div span{display:block;}
+  .chart-sum .v{font-size:18px;font-weight:700;} .chart-sum .k{font-size:11px;color:var(--muted);}
+  svg.line{width:100%;height:120px;display:block;}
+  /* Agent Assist */
+  .assist{position:sticky;top:76px;height:calc(100vh - 94px);display:flex;flex-direction:column;}
+  .assist .hd{background:linear-gradient(90deg,var(--primary),#6366f1);color:#fff;border-radius:14px 14px 0 0;border-bottom:0;}
+  .assist .hd .ic{font-size:15px;}
+  .messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:14px 14px 4px;}
+  .msg{padding:10px 12px;border-radius:12px;max-width:88%;white-space:pre-wrap;font-size:13px;line-height:1.45;}
+  .msg.user{align-self:flex-end;background:var(--primary);color:#fff;border-bottom-right-radius:4px;}
+  .msg.bot{align-self:flex-start;background:#f1f5f9;border:1px solid var(--line);border-bottom-left-radius:4px;}
+  .msg .agenttag{font-size:11px;color:var(--primary);font-weight:700;margin-bottom:4px;display:flex;gap:6px;align-items:center;}
+  .msg.bot .badge{background:#e0e7ff;color:#4338ca;border-radius:10px;padding:0 7px;font-size:10px;font-weight:600;}
+  .msg .metaline{font-size:11px;color:var(--muted);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;}
+  .msg .inspect{cursor:pointer;color:var(--primary);text-decoration:underline;}
+  .typing{display:inline-flex;gap:3px;} .typing i{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:bounce 1.2s infinite;}
+  .typing i:nth-child(2){animation-delay:.2s;} .typing i:nth-child(3){animation-delay:.4s;}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-4px);opacity:1;}}
+  .status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);padding:2px 14px;min-height:20px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);} .dot.busy{background:var(--warn);animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .composer{display:flex;gap:8px;padding:10px 14px 14px;}
+  .composer input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#f8fafc;color:var(--ink);font:inherit;}
+  .composer input:disabled{opacity:.55;}
+  .composer button{padding:10px 16px;border-radius:10px;border:0;background:var(--primary);color:#fff;cursor:pointer;font-weight:600;}
+  .composer button:disabled{opacity:.5;cursor:not-allowed;}
+  .quick{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 8px;}
+  .quick button{font:inherit;font-size:11px;padding:4px 9px;border-radius:14px;border:1px solid var(--line);background:#f8fafc;color:var(--muted);cursor:pointer;}
+  .quick button:hover{border-color:var(--primary);color:var(--primary);}
   /* Debug drawer */
-  #debug { position:fixed; top:0; right:0; width:420px; max-width:92vw; height:100vh; background:#12151c; border-left:1px solid var(--line); box-shadow:-8px 0 24px rgba(0,0,0,.4); transform:translateX(100%); transition:transform .2s ease; overflow:auto; z-index:50; }
-  #debug.open { transform:translateX(0); }
-  #debug .dhead { display:flex; align-items:center; padding:14px 16px; border-bottom:1px solid var(--line); position:sticky; top:0; background:#12151c; }
-  #debug .dhead h3 { margin:0; font-size:14px; flex:1; }
-  #debug .body { padding:14px 16px; font-size:12px; }
-  #debug h4 { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:16px 0 8px; }
-  #debug h4:first-child { margin-top:0; }
-  .drow { display:flex; justify-content:space-between; gap:12px; padding:3px 0; border-bottom:1px solid #1c212b; }
-  .drow span:first-child { color:var(--muted); }
-  .drow code { color:var(--text); font-size:11px; word-break:break-all; text-align:right; }
-  .score { display:grid; grid-template-columns:1fr auto; gap:4px 8px; align-items:center; margin:3px 0; }
-  .bar { height:8px; background:var(--line); border-radius:4px; overflow:hidden; }
-  .bar > i { display:block; height:100%; background:var(--accent); }
-  .score.win .bar > i { background:var(--ok); }
-  .chosen { color:var(--ok); font-weight:600; }
-  .kw { display:inline-block; background:var(--line); border-radius:4px; padding:1px 6px; margin:2px 3px 0 0; font-size:10px; color:var(--muted); }
-  .wf { display:flex; flex-direction:column; gap:5px; }
-  .wf .row { display:grid; grid-template-columns:120px 1fr 64px; gap:8px; align-items:center; }
-  .wf .row .label { color:var(--muted); font-size:11px; }
-  .wf .row .track { height:14px; background:var(--line); border-radius:4px; overflow:hidden; }
-  .wf .row .track > i { display:block; height:100%; background:var(--accent); }
-  .wf .row .t { text-align:right; font-size:11px; }
-  .tool { display:inline-block; background:rgba(59,130,246,.15); color:#93c5fd; border-radius:4px; padding:1px 7px; margin:2px 4px 0 0; font-size:10px; }
-  a.link { color:var(--accent); }
-  .err { color:var(--bad); }
+  #debug{position:fixed;top:0;right:0;width:440px;max-width:94vw;height:100vh;background:var(--card);
+    border-left:1px solid var(--line);box-shadow:-8px 0 30px rgba(15,23,42,.18);transform:translateX(100%);
+    transition:transform .2s ease;overflow:auto;z-index:60;}
+  #debug.open{transform:translateX(0);}
+  #debug .dhead{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);}
+  #debug .dhead h3{margin:0;font-size:14px;flex:1;}
+  #debug .body{padding:14px 16px;font-size:12px;}
+  #debug h4{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:16px 0 8px;}
+  #debug h4:first-child{margin-top:0;}
+  .drow{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid #f1f5f9;}
+  .drow span:first-child{color:var(--muted);} .drow code{font-size:11px;word-break:break-all;text-align:right;}
+  .score{display:grid;grid-template-columns:1fr auto;gap:3px 8px;margin:5px 0;}
+  .bar{grid-column:1/3;height:7px;background:#eef2f7;border-radius:4px;overflow:hidden;} .bar>i{display:block;height:100%;background:var(--primary);}
+  .score.win .bar>i{background:var(--ok);} .chosen{color:var(--ok);font-weight:700;}
+  .kw{display:inline-block;background:#eef2f7;border-radius:4px;padding:1px 6px;margin:2px 3px 0 0;font-size:10px;color:var(--muted);}
+  .wf{display:flex;flex-direction:column;gap:5px;}
+  .wf .row{display:grid;grid-template-columns:120px 1fr 64px;gap:8px;align-items:center;}
+  .wf .row .label{color:var(--muted);font-size:11px;} .wf .row .track{height:14px;background:#eef2f7;border-radius:4px;overflow:hidden;}
+  .wf .row .track>i{display:block;height:100%;background:var(--primary);} .wf .row .t{text-align:right;font-size:11px;}
+  .tool{display:inline-block;background:#e0e7ff;color:#4338ca;border-radius:4px;padding:1px 7px;margin:2px 4px 0 0;font-size:10px;}
+  a.link{color:var(--primary);} .err{color:var(--bad);}
+  .backdrop{position:fixed;inset:0;background:rgba(15,23,42,.25);z-index:55;display:none;} .backdrop.open{display:block;}
 </style>
 </head>
 <body>
 <header>
-  <h1>📞 Telco Agent Desktop</h1>
-  <span class="badge" id="mode">…</span>
-  <span class="badge" id="trace">tracing: …</span>
-  <span class="spacer"></span>
-  <button class="btn" id="debugBtn">🐞 Debug</button>
+  <div class="brand"><span class="logo">📶</span> Contoso Telecom <span style="opacity:.7;font-weight:400">· Care Console</span></div>
+  <div class="spacer"></div>
+  <div class="hsearch" id="hsearch">
+    <div class="field" id="searchField">
+      <span class="mag">🔍</span>
+      <input id="q" placeholder="Search customers by name or ID…" autocomplete="off" />
+    </div>
+    <div class="hdrop" id="hdrop"></div>
+  </div>
+  <div class="spacer"></div>
+  <span class="hbadge" id="mode">data: …</span>
+  <span class="hbadge" id="trace">tracing: …</span>
+  <button class="hbtn" id="debugBtn">🐞 Debug</button>
 </header>
 
-<div class="layout">
-  <div class="col search">
-    <div style="margin-bottom:10px">
-      <input id="q" placeholder="Search customer (name or ID)…" autocomplete="off" />
+<main id="main">
+  <div class="empty" id="empty">
+    <div>
+      <div class="big">🔎</div>
+      <div style="font-size:16px;color:var(--ink);font-weight:600;margin-bottom:4px">Find a customer to begin</div>
+      <div>Use the search box above. Try <b>Natasha Ryan</b> or <b>CUST000001</b>.</div>
     </div>
-    <div id="results"></div>
   </div>
-
-  <div class="col" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-    <div class="profile" id="profile"><p class="muted">Select a customer to load their 360 profile.</p></div>
-    <div class="chat">
+  <div class="grid" id="console" style="display:none">
+    <div class="stack" id="detail"></div>
+    <div class="card assist">
+      <div class="hd"><span class="ic">🤖</span> Agent Assist</div>
       <div class="messages" id="messages"></div>
-      <div class="status" id="status"><span class="dot idle"></span><span id="statusText">Ready</span></div>
+      <div class="quick" id="quick"></div>
+      <div class="status"><span class="dot" id="dot"></span><span id="statusText">Ready</span></div>
       <div class="composer">
-        <input id="chatInput" placeholder="Ask about billing, service, offers…" />
-        <button id="sendBtn">Send</button>
+        <input id="chatInput" placeholder="Ask about billing, service, offers…" disabled />
+        <button id="sendBtn" disabled>Send</button>
       </div>
     </div>
   </div>
-</div>
+</main>
 
+<div class="backdrop" id="backdrop"></div>
 <div id="debug">
-  <div class="dhead"><h3>🐞 Debug — last turn</h3><button class="btn" id="debugClose">Close</button></div>
+  <div class="dhead"><h3>🐞 Debug — last turn</h3><button class="hbtn" style="color:var(--ink);border-color:var(--line)" id="debugClose">Close</button></div>
   <div class="body" id="debugBody"><p class="muted">Send a message to see routing, timing, and trace details.</p></div>
 </div>
 
 <script>
-let current = null;
-let busy = false;
-const debugLog = [];   // one entry per bot turn
+let current = null, busy = false;
+const debugLog = [];
+const AVA = ['#4f46e5','#0ea5e9','#14b8a6','#7c3aed','#db2777','#d97706','#0891b2','#65a30d'];
+function avaColor(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return AVA[h%AVA.length];}
+function initials(f,l){return ((f||' ')[0]+(l||' ')[0]).toUpperCase();}
+async function j(url,opts){const r=await fetch(url,opts);if(!r.ok)throw new Error(await r.text());return r.json();}
+function esc(s){return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function val(p,k){const v=p[k];return(v===''||v==null)?'—':v;}
+function truthy(v){return v===true||v==='True'||v===1||v==='1';}
+function money(v){const n=parseFloat(v);return isNaN(n)?'—':'$'+n.toFixed(2);}
 
-async function j(url, opts) { const r = await fetch(url, opts); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+(async()=>{try{const h=await j('/api/health');
+  document.getElementById('mode').innerHTML='data: <b>'+h.data_mode+'</b>';
+  document.getElementById('trace').innerHTML='tracing: <b>'+(h.tracing?'on':'off')+'</b>';
+}catch{document.getElementById('mode').textContent='offline';}})();
 
-(async () => {
-  try {
-    const h = await j('/api/health');
-    document.getElementById('mode').textContent = 'data: ' + h.data_mode;
-    document.getElementById('trace').textContent = 'tracing: ' + (h.tracing ? 'on' : 'off');
-  } catch { document.getElementById('mode').textContent = 'offline'; }
-})();
-
-// ---- search ----
-const qEl = document.getElementById('q');
-let t; qEl.addEventListener('input', () => { clearTimeout(t); t = setTimeout(runSearch, 250); });
-async function runSearch() {
-  const q = qEl.value.trim(); if (!q) { document.getElementById('results').innerHTML = ''; return; }
-  try {
-    const { results } = await j('/api/search?q=' + encodeURIComponent(q));
-    document.getElementById('results').innerHTML = results.map(r =>
-      `<div class="result" onclick="loadProfile('${r.customer_id}')">
-         <div>${r.first_name} ${r.last_name}</div>
-         <small>${r.customer_id} · ${r.city||''} ${r.state||''} · ${r.account_status||''}</small>
-       </div>`).join('') || '<p class="muted">No matches.</p>';
-  } catch (e) { document.getElementById('results').innerHTML = '<p class="muted">Search error.</p>'; }
+/* ---------- header search ---------- */
+const qEl=document.getElementById('q'), hdrop=document.getElementById('hdrop'), hsearch=document.getElementById('hsearch');
+let t;
+qEl.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(runSearch,220);});
+qEl.addEventListener('focus',()=>{if(qEl.value.trim())hdrop.classList.add('open');});
+document.addEventListener('click',e=>{if(!hsearch.contains(e.target))hdrop.classList.remove('open');});
+async function runSearch(){
+  const q=qEl.value.trim();
+  if(!q){hdrop.classList.remove('open');hdrop.innerHTML='';return;}
+  try{
+    const {results}=await j('/api/search?q='+encodeURIComponent(q));
+    if(!results.length){hdrop.innerHTML='<div class="hint">No matches.</div>';}
+    else hdrop.innerHTML=results.map(r=>`
+      <div class="hresult" onclick="pick('${r.customer_id}')">
+        <div class="ava" style="background:${avaColor(r.customer_id)}">${initials(r.first_name,r.last_name)}</div>
+        <div><div class="nm">${esc(r.first_name)} ${esc(r.last_name)}</div>
+        <div class="sub">${esc(r.customer_id)} · ${esc(r.city||'')} ${esc(r.state||'')} · ${esc(r.account_status||'')}</div></div>
+      </div>`).join('');
+    hdrop.classList.add('open');
+  }catch{hdrop.innerHTML='<div class="hint">Search error.</div>';hdrop.classList.add('open');}
+}
+async function pick(id){
+  hdrop.classList.remove('open'); qEl.value=''; qEl.blur();
+  await loadAccount(id);
 }
 
-function val(p, k) { const v = p[k]; return (v === '' || v == null) ? '—' : v; }
-function truthy(v) { return v === true || v === 'True' || v === 1 || v === '1'; }
-
-async function loadProfile(id) {
-  setStatus('busy', 'Fetching 360 profile from Fabric…');
-  try {
-    const p = await j('/api/profile/' + id);
-    current = id;
-    const alerts = [];
-    if (truthy(p.last_invoice_is_first_bill) && !truthy(p.last_invoice_paid))
-      alerts.push(['warn', `Unpaid FIRST bill: $${val(p,'last_invoice_amount')} (activation + proration)`]);
-    if (String(p.risk_band).toLowerCase() === 'high')
-      alerts.push(['bad', `High churn risk — ${val(p,'churn_top_reason')}`]);
-    if (truthy(p.recent_outage_exposure))
-      alerts.push(['bad', 'Recent outage in customer area']);
-    if (p.top_crosssell_product)
-      alerts.push(['info', `Cross-sell: ${p.top_crosssell_product} (score ${val(p,'top_crosssell_score')})`]);
-
-    document.getElementById('profile').innerHTML = `
-      <h2>${p.first_name} ${p.last_name}
-        <span class="pill ${p.account_status}">${p.account_status||''}</span>
-        <span class="pill ${p.risk_band}">${p.risk_band||''} risk</span>
-      </h2>
-      <div class="alerts">${alerts.map(a => `<div class="alert ${a[0]}">${a[1]}</div>`).join('')}</div>
-      <div class="kv">
-        <div>Customer ID</div><div>${val(p,'customer_id')}</div>
-        <div>Segment</div><div>${val(p,'segment')}</div>
-        <div>Tenure</div><div>${val(p,'tenure_months')} months</div>
-        <div>Location</div><div>${val(p,'city')}, ${val(p,'state')} ${val(p,'zip')}</div>
-        <div>Products</div><div>${val(p,'product_list')}</div>
-        <div>Monthly (MRC)</div><div>$${val(p,'total_mrc')}</div>
-        <div>Open balance</div><div>$${val(p,'open_balance')}</div>
-        <div>Last invoice</div><div>$${val(p,'last_invoice_amount')} (${truthy(p.last_invoice_paid)?'paid':'unpaid'})</div>
-      </div>`;
-    addMsg('bot', `Loaded 360 profile for ${p.first_name} ${p.last_name}. How can I help this customer?`);
-    setStatus('idle', 'Ready');
-  } catch (e) {
-    setStatus('idle', 'Ready');
-    document.getElementById('profile').innerHTML = '<p class="err">Failed to load profile.</p>';
-  }
+/* ---------- account detail ---------- */
+async function loadAccount(id){
+  setStatus('busy','Fetching 360 profile from Fabric…');
+  try{
+    const d=await j('/api/account/'+id);
+    current=id;
+    document.getElementById('empty').style.display='none';
+    document.getElementById('console').style.display='grid';
+    renderDetail(d);
+    document.getElementById('messages').innerHTML='';
+    const p=d.profile;
+    addMsg('bot',`Loaded 360 profile for ${p.first_name} ${p.last_name}. How can I help this customer?`);
+    document.getElementById('chatInput').disabled=false; document.getElementById('sendBtn').disabled=false;
+    renderQuick();
+    setStatus('idle','Ready');
+  }catch(e){setStatus('idle','Ready');alert('Failed to load customer: '+e.message);}
 }
 
-// ---- chat message rendering ----
-function addMsg(role, text, opts) {
-  opts = opts || {};
-  const d = document.createElement('div'); d.className = 'msg ' + role;
-  if (opts.agent) {
-    const tag = document.createElement('div'); tag.className = 'agenttag';
-    tag.innerHTML = `<span>${opts.agent}</span>` + (opts.mode ? `<span class="badge">${opts.mode}</span>` : '');
-    d.appendChild(tag);
-  }
-  d.appendChild(document.createTextNode(text));
-  if (opts.meta) d.appendChild(opts.meta);
-  const m = document.getElementById('messages'); m.appendChild(d); m.scrollTop = m.scrollHeight;
-  return d;
+function gauge(prob, band){
+  const p=Math.max(0,Math.min(1,parseFloat(prob)||0));
+  const col=band==='High'?'#dc2626':band==='Medium'?'#d97706':'#16a34a';
+  const r=42, cx=50, cy=50, circ=Math.PI*r; // semicircle
+  const dash=p*circ;
+  return `<svg width="120" height="70" viewBox="0 0 100 58">
+    <path d="M8 50 A42 42 0 0 1 92 50" fill="none" stroke="#eef2f7" stroke-width="9" stroke-linecap="round"/>
+    <path d="M8 50 A42 42 0 0 1 92 50" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round"
+      stroke-dasharray="${dash} ${circ}"/>
+    <text x="50" y="44" text-anchor="middle" font-size="17" font-weight="700" fill="${col}">${Math.round(p*100)}%</text>
+  </svg>
+  <div class="muted" style="margin-top:-6px">churn risk · <b style="color:${col}">${band||'—'}</b></div>`;
 }
 
-function makeTyping(agent) {
-  const d = document.createElement('div'); d.className = 'msg bot';
-  d.innerHTML = `<div class="agenttag"><span>${agent||'Routing…'}</span></div>
-    <span class="typing"><i></i><i></i><i></i></span>`;
-  const m = document.getElementById('messages'); m.appendChild(d); m.scrollTop = m.scrollHeight;
-  return d;
-}
+function renderDetail(d){
+  const p=d.profile;
+  const alerts=[];
+  if(truthy(p.last_invoice_is_first_bill)&&!truthy(p.last_invoice_paid))
+    alerts.push(['warn','📄','Unpaid FIRST bill: '+money(p.last_invoice_amount)+' (activation + proration)']);
+  if(String(p.risk_band).toLowerCase()==='high')
+    alerts.push(['bad','⚠️','High churn risk — '+val(p,'churn_top_reason')]);
+  if(truthy(p.recent_outage_exposure))
+    alerts.push(['bad','📡','Recent outage in customer area']);
+  if(p.top_crosssell_product)
+    alerts.push(['info','✨','Cross-sell: '+p.top_crosssell_product+' (score '+val(p,'top_crosssell_score')+')']);
+  if(!alerts.length) alerts.push(['ok','✓','No active flags — account in good standing.']);
 
-let timerHandle = null;
-function setStatus(kind, text, since) {
-  const dot = document.querySelector('#status .dot');
-  dot.className = 'dot ' + (kind === 'busy' ? 'busy' : 'idle');
-  const el = document.getElementById('statusText');
-  if (since) {
-    if (timerHandle) clearInterval(timerHandle);
-    timerHandle = setInterval(() => {
-      el.textContent = text + ' ' + ((performance.now() - since) / 1000).toFixed(1) + 's';
-    }, 100);
-  } else {
-    if (timerHandle) { clearInterval(timerHandle); timerHandle = null; }
-    el.textContent = text;
-  }
-}
-
-async function send() {
-  if (busy) return;
-  const el = document.getElementById('chatInput'); const text = el.value.trim(); if (!text) return;
-  addMsg('user', text); el.value = '';
-  setBusy(true);
-
-  // 1) fast routing preview so we can show which agent we'll call
-  let agentName = null, routing = null;
-  try {
-    routing = await j('/api/route', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ message: text, customer_id: current }) });
-    agentName = routing.chosen;
-  } catch {}
-
-  const started = performance.now();
-  setStatus('busy', 'Contacting ' + (agentName || 'agent') + '…', started);
-  const bubble = makeTyping(agentName);
-
-  // 2) run the agent
-  try {
-    const res = await j('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ message: text, customer_id: current }) });
-    bubble.remove();
-    const dbg = res.debug || {};
-    const meta = buildMeta(dbg, debugLog.length);
-    addMsg('bot', res.reply, { agent: res.agent, mode: res.mode, meta });
-    debugLog.push({ input: text, res, routing });
-    renderDebug(debugLog.length - 1);
-  } catch (e) {
-    bubble.remove();
-    addMsg('bot', 'Error contacting the agent: ' + e.message, { agent: agentName||'', mode:'error' });
-  } finally {
-    setBusy(false);
-  }
-}
-
-function buildMeta(dbg, idx) {
-  const span = document.createElement('div'); span.className = 'metaline';
-  const bits = [];
-  const total = dbg.timing_ms && dbg.timing_ms.total;
-  if (total != null) bits.push(`⏱ ${(total/1000).toFixed(1)}s`);
-  if (dbg.usage && dbg.usage.total_tokens != null) bits.push(`🔤 ${dbg.usage.total_tokens} tok`);
-  span.innerHTML = bits.map(b => `<span>${b}</span>`).join('') +
-    ` <span class="inspect" onclick="openDebug(${idx})">inspect ›</span>`;
-  return span;
-}
-
-function setBusy(v) {
-  busy = v;
-  document.getElementById('chatInput').disabled = v;
-  document.getElementById('sendBtn').disabled = v;
-  if (!v) setStatus('idle', 'Ready');
-  else document.getElementById('chatInput').blur();
-}
-
-// ---- debug drawer ----
-const drawer = document.getElementById('debug');
-document.getElementById('debugBtn').addEventListener('click', () => drawer.classList.toggle('open'));
-document.getElementById('debugClose').addEventListener('click', () => drawer.classList.remove('open'));
-function openDebug(idx) { renderDebug(idx); drawer.classList.add('open'); document.getElementById('debugBtn').classList.add('active'); }
-
-function esc(s) { return String(s==null?'':s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
-
-function renderDebug(idx) {
-  const entry = debugLog[idx]; if (!entry) return;
-  const { input, res } = entry; const d = res.debug || {};
-  const r = d.routing || {}; const scores = r.scores || {};
-  const maxScore = Math.max(1, ...Object.values(scores));
-  const spans = d.spans || []; const maxMs = Math.max(1, ...spans.map(s => s.ms));
-
-  const scoreRows = Object.entries(scores).map(([name, sc]) => {
-    const win = name === r.chosen;
-    const kws = (r.matched && r.matched[name]) || [];
-    return `<div class="score ${win?'win':''}">
-        <div>${win?'✓ ':''}<span class="${win?'chosen':''}">${esc(short(name))}</span>
-          ${kws.length?`<div>${kws.map(k=>`<span class="kw">${esc(k)}</span>`).join('')}</div>`:''}
+  const banner=`<div class="card"><div class="banner">
+      <div class="ava" style="background:${avaColor(p.customer_id)}">${initials(p.first_name,p.last_name)}</div>
+      <div class="who">
+        <h2>${esc(p.first_name)} ${esc(p.last_name)}
+          <span class="pill ${p.account_status}">${esc(p.account_status||'')}</span>
+          <span class="pill seg">${esc(p.segment||'')}</span></h2>
+        <div class="line">
+          <span>🆔 ${esc(p.customer_id)}</span>
+          <span>📞 ${val(p,'phone')}</span>
+          <span>✉️ ${val(p,'email')}</span>
+          <span>📍 ${val(p,'city')}, ${val(p,'state')} ${val(p,'zip')}</span>
+          <span>⏳ ${val(p,'tenure_months')} mo tenure</span>
         </div>
-        <div style="text-align:right">${sc}</div>
-        <div class="bar" style="grid-column:1/3"><i style="width:${(sc/maxScore*100)}%"></i></div>
-      </div>`;
-  }).join('');
+      </div>
+      <div class="gauge">${gauge(p.churn_probability, p.risk_band)}</div>
+    </div></div>`;
 
-  const wf = spans.map(s => `<div class="row">
-      <div class="label">${esc(s.name)}</div>
-      <div class="track"><i style="width:${(s.ms/maxMs*100)}%"></i></div>
-      <div class="t">${s.ms>=1000?(s.ms/1000).toFixed(2)+'s':Math.round(s.ms)+'ms'}</div>
-    </div>`).join('');
+  const kpis=`<div class="kpis">
+      ${kpi('Monthly (MRC)', money(p.total_mrc), val(p,'active_products')+' active products','')}
+      ${kpi('Open Balance', money(p.open_balance), truthy(p.last_invoice_paid)?'current':'payment due','amber')}
+      ${kpi('Last Invoice', money(p.last_invoice_amount), truthy(p.last_invoice_paid)?'paid':'unpaid','sky')}
+      ${kpi('Products', val(p,'product_list'), 'subscribed','teal')}
+    </div>`;
 
-  const u = d.usage || {};
-  const ai = d.app_insights || {};
-  const rows = [];
-  rows.push(row('Mode', `<code>${esc(res.mode)}</code>`));
-  rows.push(row('Chosen agent', `<code class="chosen">${esc(res.agent)}</code>`));
-  rows.push(row('Reason', `<code>${esc(r.reason)}</code>`));
-  rows.push(row('Tools on agent', (r.agent_tools||[]).map(x=>`<span class="tool">${esc(x)}</span>`).join('') || '—'));
-  rows.push(row('Input chars', `<code>${esc(d.input_chars)}</code>`));
-  rows.push(row('360 context sent', `<code>${d.context_included?'yes':'no'}</code>`));
-  if (u.input_tokens!=null) rows.push(row('Tokens (in/out)', `<code>${u.input_tokens} / ${u.output_tokens}</code>`));
-  if (d.response_id) rows.push(row('Response id', `<code>${esc(d.response_id)}</code>`));
-  if (d.trace_id) rows.push(row('Trace id', `<code>${esc(d.trace_id)}</code>`));
-  if (d.error) rows.push(row('Error', `<code class="err">${esc(d.error)}</code>`));
+  const alertsCard=card('🔔','Account signals',`<div class="alerts">${alerts.map(a=>
+      `<div class="alert ${a[0]}"><span>${a[1]}</span><span>${esc(a[2])}</span></div>`).join('')}</div>`);
 
-  let traceLinks = '';
-  if (ai.name) {
-    traceLinks = `<h4>Trace</h4>
-      <div class="muted" style="margin-bottom:6px">Full agent-internal spans (tool calls) flow to App Insights <code>${esc(ai.name)}</code> — allow 1–3 min.</div>`;
-    if (ai.portal_url) traceLinks += `<a class="link" href="${ai.portal_url}" target="_blank">Open Transaction Search in Azure portal ›</a>`;
-    if (d.trace_id) traceLinks += `<div class="muted" style="margin-top:6px">Filter by operation Id = <code>${esc(d.trace_id)}</code></div>`;
-  }
+  // charts
+  const dUsage=d.usage_data||[], vUsage=d.usage_voice||[];
+  const chartsCard=card('📈','Usage — last 30 days',`<div class="charts">
+      <div>${chartSummary(dUsage,'gb_used','GB','#0ea5e9')}${lineSvg(dUsage,'gb_used','#0ea5e9')}</div>
+      <div>${chartSummary(vUsage,'minutes_used','min','#14b8a6')}${lineSvg(vUsage,'minutes_used','#14b8a6')}</div>
+    </div>`);
 
-  document.getElementById('debugBody').innerHTML = `
+  // invoice table
+  const inv=d.invoices||[];
+  const invRows=inv.slice(0,12).map(r=>`<tr>
+      <td>${esc(r.invoice_id)}</td>
+      <td>${esc(r.period_start)} → ${esc(r.period_end)}</td>
+      <td class="num-c">${money(r.amount)}</td>
+      <td>${esc(r.due_date)}</td>
+      <td>${truthy(r.paid)?'<span class="tag paid">paid</span>':'<span class="tag unpaid">unpaid</span>'}
+          ${truthy(r.is_first_bill)?'<span class="tag first">first</span>':''}</td>
+    </tr>`).join('') || `<tr><td colspan="5" class="muted">No invoices.</td></tr>`;
+  const invCard=card('🧾','Invoice history',`<div class="tbl-wrap"><table>
+      <thead><tr><th>Invoice</th><th>Period</th><th class="num-c">Amount</th><th>Due</th><th>Status</th></tr></thead>
+      <tbody>${invRows}</tbody></table></div>`);
+
+  // work orders
+  const wo=d.work_orders||[];
+  const woRows=wo.slice(0,20).map(r=>{
+    const st=String(r.status||'').toLowerCase().replace(/\s/g,'');
+    return `<tr>
+      <td>${esc(r.work_order_id)}</td>
+      <td>${esc(r.type)}</td>
+      <td><span class="tag ${esc(r.priority)}">${esc(r.priority)}</span></td>
+      <td><span class="tag ${st}">${esc(r.status)}</span></td>
+      <td>${esc(r.opened_date)}</td>
+      <td>${esc(r.closed_date||'—')}</td>
+      <td class="muted">${esc(r.resolution||'')}</td>
+    </tr>`;}).join('') || `<tr><td colspan="7" class="muted">No work orders on file.</td></tr>`;
+  const woCard=card('🛠️','Work orders & tickets',`<div class="tbl-wrap"><table>
+      <thead><tr><th>ID</th><th>Type</th><th>Pri</th><th>Status</th><th>Opened</th><th>Closed</th><th>Resolution</th></tr></thead>
+      <tbody>${woRows}</tbody></table></div>`);
+
+  document.getElementById('detail').innerHTML=banner+kpis+alertsCard+chartsCard+invCard+woCard;
+}
+function kpi(lab,num,sub,cls){return `<div class="kpi ${cls}"><div class="lab">${lab}</div>
+  <div class="num">${esc(num)}</div><div class="sub">${esc(sub)}</div></div>`;}
+function card(ic,title,body){return `<div class="card"><div class="hd"><span class="ic">${ic}</span> ${title}</div><div class="bd">${body}</div></div>`;}
+
+function chartSummary(rows,key,unit,color){
+  const vals=rows.map(r=>parseFloat(r[key])||0);
+  const total=vals.reduce((a,b)=>a+b,0), avg=vals.length?total/vals.length:0, peak=vals.length?Math.max(...vals):0;
+  return `<div class="chart-sum">
+    <div><span class="v" style="color:${color}">${total.toFixed(0)}</span><span class="k">total ${unit}</span></div>
+    <div><span class="v">${avg.toFixed(1)}</span><span class="k">avg/day</span></div>
+    <div><span class="v">${peak.toFixed(1)}</span><span class="k">peak</span></div>
+  </div>`;
+}
+function lineSvg(rows,key,color){
+  if(!rows||!rows.length)return '<div class="muted">No usage data.</div>';
+  const W=100,H=40,pad=3;
+  const vals=rows.map(r=>parseFloat(r[key])||0);
+  const max=Math.max(...vals,1), n=vals.length;
+  const pts=vals.map((v,i)=>{const x=pad+(i/(n-1))*(W-2*pad);const y=H-pad-(v/max)*(H-2*pad);return [x,y];});
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=`M${pts[0][0].toFixed(1)} ${(H-pad).toFixed(1)} `+pts.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')+` L${pts[n-1][0].toFixed(1)} ${(H-pad).toFixed(1)} Z`;
+  const gid='g'+Math.random().toString(36).slice(2,7);
+  return `<svg class="line" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="${gid}" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="${color}" stop-opacity="0.28"/><stop offset="1" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${area}" fill="url(#${gid})"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>`;
+}
+
+/* ---------- quick asks ---------- */
+function renderQuick(){
+  const qs=['Why is my first bill so high?','My internet keeps dropping — can I get a credit?','What offers am I eligible for?','What is my current balance?'];
+  document.getElementById('quick').innerHTML=qs.map(x=>`<button onclick="quickAsk(this)">${esc(x)}</button>`).join('');
+}
+function quickAsk(btn){const el=document.getElementById('chatInput');el.value=btn.textContent;send();}
+
+/* ---------- chat ---------- */
+function addMsg(role,text,opts){opts=opts||{};
+  const d=document.createElement('div');d.className='msg '+role;
+  if(opts.agent){const tag=document.createElement('div');tag.className='agenttag';
+    tag.innerHTML=`<span>${esc(opts.agent)}</span>`+(opts.mode?`<span class="badge">${esc(opts.mode)}</span>`:'');d.appendChild(tag);}
+  d.appendChild(document.createTextNode(text));
+  if(opts.meta)d.appendChild(opts.meta);
+  const m=document.getElementById('messages');m.appendChild(d);m.scrollTop=m.scrollHeight;return d;
+}
+function makeTyping(agent){const d=document.createElement('div');d.className='msg bot';
+  d.innerHTML=`<div class="agenttag"><span>${esc(agent||'Routing…')}</span></div><span class="typing"><i></i><i></i><i></i></span>`;
+  const m=document.getElementById('messages');m.appendChild(d);m.scrollTop=m.scrollHeight;return d;}
+let timerHandle=null;
+function setStatus(kind,text,since){
+  const dot=document.getElementById('dot');dot.className='dot'+(kind==='busy'?' busy':'');
+  const el=document.getElementById('statusText');
+  if(since){if(timerHandle)clearInterval(timerHandle);
+    timerHandle=setInterval(()=>{el.textContent=text+' '+((performance.now()-since)/1000).toFixed(1)+'s';},100);}
+  else{if(timerHandle){clearInterval(timerHandle);timerHandle=null;}el.textContent=text;}
+}
+function setBusy(v){busy=v;document.getElementById('chatInput').disabled=v;document.getElementById('sendBtn').disabled=v;
+  if(!v)setStatus('idle','Ready');}
+async function send(){
+  if(busy||!current)return;
+  const el=document.getElementById('chatInput');const text=el.value.trim();if(!text)return;
+  addMsg('user',text);el.value='';setBusy(true);
+  let agentName=null,routing=null;
+  try{routing=await j('/api/route',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({message:text,customer_id:current})});agentName=routing.chosen;}catch{}
+  const started=performance.now();
+  setStatus('busy','Contacting '+(agentName||'agent')+'…',started);
+  const bubble=makeTyping(agentName);
+  try{
+    const res=await j('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:text,customer_id:current})});
+    bubble.remove();
+    const dbg=res.debug||{};const meta=buildMeta(dbg,debugLog.length);
+    addMsg('bot',res.reply,{agent:res.agent,mode:res.mode,meta});
+    debugLog.push({input:text,res,routing});renderDebug(debugLog.length-1);
+  }catch(e){bubble.remove();addMsg('bot','Error contacting the agent: '+e.message,{agent:agentName||'',mode:'error'});}
+  finally{setBusy(false);}
+}
+function buildMeta(dbg,idx){const span=document.createElement('div');span.className='metaline';const bits=[];
+  const total=dbg.timing_ms&&dbg.timing_ms.total;if(total!=null)bits.push('⏱ '+(total/1000).toFixed(1)+'s');
+  if(dbg.usage&&dbg.usage.total_tokens!=null)bits.push('🔤 '+dbg.usage.total_tokens+' tok');
+  span.innerHTML=bits.map(b=>`<span>${b}</span>`).join('')+` <span class="inspect" onclick="openDebug(${idx})">inspect ›</span>`;return span;}
+
+/* ---------- debug drawer ---------- */
+const drawer=document.getElementById('debug'),backdrop=document.getElementById('backdrop');
+function toggleDrawer(open){drawer.classList.toggle('open',open);backdrop.classList.toggle('open',open);document.getElementById('debugBtn').classList.toggle('active',open);}
+document.getElementById('debugBtn').addEventListener('click',()=>toggleDrawer(!drawer.classList.contains('open')));
+document.getElementById('debugClose').addEventListener('click',()=>toggleDrawer(false));
+backdrop.addEventListener('click',()=>toggleDrawer(false));
+function openDebug(idx){renderDebug(idx);toggleDrawer(true);}
+function short(n){return n.replace('telco-','').replace('Agent','');}
+function renderDebug(idx){
+  const entry=debugLog[idx];if(!entry)return;const {input,res}=entry;const d=res.debug||{};
+  const r=d.routing||{};const scores=r.scores||{};const maxS=Math.max(1,...Object.values(scores));
+  const spans=d.spans||[];const maxMs=Math.max(1,...spans.map(s=>s.ms));
+  const scoreRows=Object.entries(scores).map(([name,sc])=>{const win=name===r.chosen;
+    const kws=(r.matched&&r.matched[name])||[];
+    return `<div class="score ${win?'win':''}"><div>${win?'✓ ':''}<span class="${win?'chosen':''}">${esc(short(name))}</span>
+      ${kws.length?`<div>${kws.map(k=>`<span class="kw">${esc(k)}</span>`).join('')}</div>`:''}</div>
+      <div style="text-align:right">${sc}</div><div class="bar"><i style="width:${sc/maxS*100}%"></i></div></div>`;}).join('');
+  const wf=spans.map(s=>`<div class="row"><div class="label">${esc(s.name)}</div>
+    <div class="track"><i style="width:${s.ms/maxMs*100}%"></i></div>
+    <div class="t">${s.ms>=1000?(s.ms/1000).toFixed(2)+'s':Math.round(s.ms)+'ms'}</div></div>`).join('');
+  const u=d.usage||{},ai=d.app_insights||{},rows=[];
+  rows.push(row('Mode',`<code>${esc(res.mode)}</code>`));
+  rows.push(row('Chosen agent',`<code class="chosen">${esc(res.agent)}</code>`));
+  rows.push(row('Reason',`<code>${esc(r.reason)}</code>`));
+  rows.push(row('Tools on agent',(r.agent_tools||[]).map(x=>`<span class="tool">${esc(x)}</span>`).join('')||'—'));
+  rows.push(row('Input chars',`<code>${esc(d.input_chars)}</code>`));
+  rows.push(row('360 context sent',`<code>${d.context_included?'yes':'no'}</code>`));
+  if(u.input_tokens!=null)rows.push(row('Tokens (in/out)',`<code>${u.input_tokens} / ${u.output_tokens}</code>`));
+  if(d.response_id)rows.push(row('Response id',`<code>${esc(d.response_id)}</code>`));
+  if(d.trace_id)rows.push(row('Trace id',`<code>${esc(d.trace_id)}</code>`));
+  if(d.error)rows.push(row('Error',`<code class="err">${esc(d.error)}</code>`));
+  let tl='';
+  if(ai.name){tl=`<h4>Trace</h4><div class="muted" style="margin-bottom:6px">Full agent-internal spans flow to App Insights <code>${esc(ai.name)}</code> — allow 1–3 min.</div>`;
+    if(ai.portal_url)tl+=`<a class="link" href="${ai.portal_url}" target="_blank">Open Transaction Search in Azure portal ›</a>`;
+    if(d.trace_id)tl+=`<div class="muted" style="margin-top:6px">Filter by operation Id = <code>${esc(d.trace_id)}</code></div>`;}
+  document.getElementById('debugBody').innerHTML=`
     <h4>Input</h4><div class="drow"><span>message</span><code>${esc(input)}</code></div>
     <h4>Routing decision</h4>${scoreRows}
     ${(r.nudges&&r.nudges.length)?`<div class="muted" style="margin-top:6px">${r.nudges.map(esc).join('<br>')}</div>`:''}
     <h4>App timeline</h4><div class="wf">${wf}</div>
-    <h4>Details</h4>${rows.join('')}
-    ${traceLinks}`;
+    <h4>Details</h4>${rows.join('')}${tl}`;
 }
-function row(k, v) { return `<div class="drow"><span>${k}</span>${v}</div>`; }
-function short(n) { return n.replace('telco-','').replace('Agent',''); }
+function row(k,v){return `<div class="drow"><span>${k}</span>${v}</div>`;}
 
-document.getElementById('sendBtn').addEventListener('click', send);
-document.getElementById('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+document.getElementById('sendBtn').addEventListener('click',send);
+document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')send();});
 </script>
 </body>
 </html>

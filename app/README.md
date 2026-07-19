@@ -9,8 +9,15 @@ and the chat panel **auto-routes** each message to the right **Foundry journey a
 
 | Mode | When | Data source |
 |---|---|---|
-| **live** | `FABRIC_SQL_ENDPOINT` + `FABRIC_LAKEHOUSE_NAME` set and `pyodbc` available | `customer_360` on the Fabric SQL endpoint |
+| **live** | `FABRIC_SQL_ENDPOINT` + `FABRIC_LAKEHOUSE_NAME` set and `pyodbc` available | `gold.*` tables on the Fabric SQL endpoint |
 | **local** | otherwise | committed sample data in `../data/csv` |
+
+Data access is abstracted behind a `DataProvider` interface in `data_access.py`
+(`LocalCsvProvider` / `FabricSqlProvider`), with `COLS` as the single source of truth for
+the fields each collection returns. The two providers return identical shapes, so pivoting
+the whole app to Fabric is just setting the two env vars — no UI or route changes. The
+`FabricSqlProvider` already implements the `gold.*` queries (`customer_360`, `fact_invoice`,
+`fact_work_order`, `fact_usage_data`, `fact_usage_voice`, `ml_churn_score`).
 
 Chat likewise routes to a Foundry journey agent when `FOUNDRY_PROJECT_ENDPOINT` +
 `foundry/agents.generated.json` are present, else a local summary reply. This means the app
@@ -30,11 +37,13 @@ cd app
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/` | Agent desktop UI |
-| GET | `/api/health` | Reports data mode (live/local) |
-| GET | `/api/search?q=` | Customer lookup |
-| GET | `/api/profile/{id}` | Customer 360 fetch-on-contact |
-| POST | `/api/chat` | Auto-route a message to the best journey agent |
+| GET | `/` | Care Console UI |
+| GET | `/api/health` | Reports data mode (live/local) + tracing status |
+| GET | `/api/search?q=` | Customer lookup (header search) |
+| GET | `/api/profile/{id}` | Compact Customer 360 (used as agent context) |
+| GET | `/api/account/{id}` | Full LOB detail: profile + invoices, work orders, usage series, churn |
+| POST | `/api/route` | Fast routing preview (which journey agent, and why) |
+| POST | `/api/chat` | Auto-route a message to the best journey agent (returns a `debug` object) |
 
 ## Deploy to Azure
 

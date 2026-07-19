@@ -78,6 +78,14 @@ def profile(customer_id: str):
     return p
 
 
+@app.get("/api/account/{customer_id}")
+def account(customer_id: str):
+    d = data_access.get_account_detail(customer_id)
+    if not d:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return d
+
+
 @app.post("/api/chat")
 def chat(req: ChatRequest):
     prof = data_access.get_profile(req.customer_id) if req.customer_id else None

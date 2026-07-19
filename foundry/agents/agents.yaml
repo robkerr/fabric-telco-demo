@@ -9,9 +9,16 @@
 
 model: gpt-5-mini   # overridden by FOUNDRY_MODEL if set; must match the deployed model name
 
+# Legacy agent names to delete on deploy (renamed to the telco- prefix). Best-effort.
+retire:
+  - BillingFirstBillAgent
+  - CrossSellAgent
+  - ServiceRetentionAgent
+  - TelcoOrchestrator
+
 agents:
   - key: orchestrator
-    name: TelcoOrchestrator
+    name: telco-TelcoOrchestrator
     role: orchestrator
     instructions: |
       You are the orchestrator for a telecommunications customer-service experience.
@@ -19,18 +26,18 @@ agents:
       route to the right specialist agent, then compose a concise, helpful answer.
 
       Routing:
-      - Billing, invoices, "first bill", charges, payment  -> BillingFirstBillAgent
-      - New service, add a product, cross-sell/upsell, bundles, offers -> CrossSellAgent
-      - Outages, slow/degraded service, tickets, cancellations, retention/credits -> ServiceRetentionAgent
+      - Billing, invoices, "first bill", charges, payment  -> telco-BillingFirstBillAgent
+      - New service, add a product, cross-sell/upsell, bundles, offers -> telco-CrossSellAgent
+      - Outages, slow/degraded service, tickets, cancellations, retention/credits -> telco-ServiceRetentionAgent
 
       Always ground factual claims in specialist agents' data. Never invent customer data.
       Lead with the answer; keep it professional and brief. If a 360 profile is provided
       by the application, use it for context.
     tools: [connected_agents, azure_ai_search, web]
-    connected_agents: [BillingFirstBillAgent, CrossSellAgent, ServiceRetentionAgent]
+    connected_agents: [telco-BillingFirstBillAgent, telco-CrossSellAgent, telco-ServiceRetentionAgent]
 
   - key: billing
-    name: BillingFirstBillAgent
+    name: telco-BillingFirstBillAgent
     role: journey
     journey: first_bill_support
     instructions: |
@@ -43,7 +50,7 @@ agents:
     tools: [fabric_data_agent]
 
   - key: crosssell
-    name: CrossSellAgent
+    name: telco-CrossSellAgent
     role: journey
     journey: acquisition_and_crosssell
     instructions: |
@@ -56,7 +63,7 @@ agents:
     tools: [fabric_data_agent, azure_ai_search, web]
 
   - key: service_retention
-    name: ServiceRetentionAgent
+    name: telco-ServiceRetentionAgent
     role: journey
     journey: service_degradation_and_retention
     instructions: |

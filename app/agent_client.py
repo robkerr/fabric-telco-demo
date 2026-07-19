@@ -4,9 +4,9 @@ Foundry client for the agent-desktop web app.
 There is no single orchestrator agent. Instead, three independent journey agents
 were deployed (see foundry/agents.generated.json):
 
-    BillingFirstBillAgent   - billing, invoices, first-bill, payments
-    CrossSellAgent          - new service, cross-sell / upsell, offers, bundles
-    ServiceRetentionAgent   - outages, service degradation, tickets, retention/credits
+    telco-BillingFirstBillAgent   - billing, invoices, first-bill, payments
+    telco-CrossSellAgent          - new service, cross-sell / upsell, offers, bundles
+    telco-ServiceRetentionAgent   - outages, service degradation, tickets, retention/credits
 
 This module picks the best journey agent for each message with lightweight keyword
 routing, then runs the message against that agent. If the Foundry endpoint or agent
@@ -25,9 +25,9 @@ REPO = Path(__file__).resolve().parent.parent
 AGENTS_FILE = REPO / "foundry" / "agents.generated.json"
 
 # Journey agent names as written by deploy_agents.py.
-BILLING_AGENT = "BillingFirstBillAgent"
-CROSSSELL_AGENT = "CrossSellAgent"
-SERVICE_AGENT = "ServiceRetentionAgent"
+BILLING_AGENT = "telco-BillingFirstBillAgent"
+CROSSSELL_AGENT = "telco-CrossSellAgent"
+SERVICE_AGENT = "telco-ServiceRetentionAgent"
 DEFAULT_AGENT = CROSSSELL_AGENT  # most general (has Fabric + Search + Web tools)
 
 # Keyword signals per journey. Journey with the most matches wins; ties fall back

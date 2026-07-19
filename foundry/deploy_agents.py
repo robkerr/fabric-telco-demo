@@ -157,6 +157,17 @@ def main() -> int:
     else:
         print("\nNo agents were created.")
         return 1
+
+    # Retire legacy agent names (e.g. renamed to the telco_ prefix). Best-effort.
+    retire = [n for n in spec.get("retire", []) if n not in created]
+    if retire:
+        print("\nRetiring legacy agents...")
+        for name in retire:
+            try:
+                project.agents.delete(agent_name=name)
+                print(f"  - deleted {name}")
+            except Exception as ex:  # noqa: BLE001
+                print(f"  . skip {name} ({ex})")
     return 0
 
 

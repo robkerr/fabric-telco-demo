@@ -30,7 +30,7 @@ hydrates her 360 profile and surfaces a **cross-sell** opportunity.
 Save $10/mo"** (`PROMO_XSELL_1`). Product literature comes from `foundry/knowledge/mobile-and-bundles.md`.
 
 **Exercises:** `fact_subscription`, `ml_crosssell_reco`, `dim_promotion`, `fact_contact.handoff_to_agent`,
-CrossSellAgent + AI Search/Web IQ.
+telco-CrossSellAgent + AI Search/Web IQ.
 
 ---
 
@@ -52,7 +52,7 @@ CrossSellAgent + AI Search/Web IQ.
 Cites the invoice amount and due date.
 
 **Exercises:** `fact_invoice` (`is_first_bill`), `fact_invoice_line`, `fact_subscription`,
-BillingFirstBillAgent.
+telco-BillingFirstBillAgent.
 
 **Handy query (find your own example):**
 ```sql
@@ -83,7 +83,7 @@ metrics (higher latency / lower uptime); recommends a **Service Outage Credit** 
 and/or a **Loyalty Credit** (`PROMO_RET_1`) / **20% off 6 months** (`PROMO_RET_2`).
 
 **Exercises:** `fact_outage`, `fact_service_metric`, `ml_churn_score`, `dim_promotion`/`fact_offer`,
-ServiceRetentionAgent + Web IQ (weather).
+telco-ServiceRetentionAgent + Web IQ (weather).
 
 ---
 

@@ -4,9 +4,9 @@ Three **independent journey agents**, each grounded in the Fabric Data Agent and
 knowledge sources:
 
 ```
-BillingFirstBillAgent      (first-bill support)      -> Fabric Data Agent
-CrossSellAgent             (acquisition + cross-sell) -> Fabric Data Agent + AI Search + Web
-ServiceRetentionAgent      (degradation + retention)  -> Fabric Data Agent + Web
+telco-BillingFirstBillAgent      (first-bill support)      -> Fabric Data Agent
+telco-CrossSellAgent             (acquisition + cross-sell) -> Fabric Data Agent + AI Search + Web
+telco-ServiceRetentionAgent      (degradation + retention)  -> Fabric Data Agent + Web
 ```
 
 > Note: automatic orchestrator/connected-agent delegation is **not** wired. The current Foundry
@@ -63,8 +63,8 @@ Then create an AI Search connection in the Foundry project and set `AI_SEARCH_CO
 
 | Journey | Agent | Data grounding |
 |---|---|---|
-| First-bill support | BillingFirstBillAgent | invoices, invoice lines, subscriptions |
-| Acquisition + cross-sell | CrossSellAgent | subscriptions, `ml_crosssell_reco`, promotions, product docs |
-| Degradation + retention | ServiceRetentionAgent | outages, service metrics, work orders, `ml_churn_score`, offers |
+| First-bill support | telco-BillingFirstBillAgent | invoices, invoice lines, subscriptions |
+| Acquisition + cross-sell | telco-CrossSellAgent | subscriptions, `ml_crosssell_reco`, promotions, product docs |
+| Degradation + retention | telco-ServiceRetentionAgent | outages, service metrics, work orders, `ml_churn_score`, offers |
 
 See [`../docs/architecture.md`](../docs/architecture.md) for the full picture.

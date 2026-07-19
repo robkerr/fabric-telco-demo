@@ -59,6 +59,23 @@ upload the docs:
 
 Then create an AI Search connection in the Foundry project and set `AI_SEARCH_CONNECTION_NAME`.
 
+## Tracing / observability
+
+Enable end-to-end tracing of agent runs in the portal (**your project > Tracing**):
+
+```powershell
+az login
+./foundry/setup_tracing.ps1
+```
+
+This idempotently provisions a **workspace-based Application Insights** resource (backed by the
+Log Analytics workspace in the resource group), connects it to the Foundry project as an
+`AppInsights` connection, and writes `APP_INSIGHTS_NAME` +
+`APPLICATIONINSIGHTS_CONNECTION_STRING` to `.env`. A project allows only **one** AppInsights
+connection, so re-running reuses the existing one. Run an agent, then refresh the Tracing tab
+(traces can take 1–3 minutes to appear). The connection string is also emitted for optional
+client-side (web app) OpenTelemetry export.
+
 ## How the journeys use the agents
 
 | Journey | Agent | Data grounding |

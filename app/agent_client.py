@@ -205,6 +205,10 @@ def _ensure_otel():
     if not conn:
         return None
     try:
+        # Quiet the SDK's own self-telemetry (statsbeat), which targets a separate
+        # regional host and just adds DNS-retry noise; capture richer GenAI spans.
+        os.environ.setdefault("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL", "true")
+        os.environ.setdefault("AZURE_EXPERIMENTAL_ENABLE_GENAI_TRACING", "true")
         from azure.monitor.opentelemetry import configure_azure_monitor
         from opentelemetry import trace
         configure_azure_monitor(connection_string=conn, logger_name="telco-app")

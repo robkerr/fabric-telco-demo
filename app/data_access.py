@@ -85,6 +85,10 @@ class DataProvider:
     def get_churn(self, customer_id: str) -> dict[str, Any]:
         raise NotImplementedError
 
+    def product_names(self) -> dict[str, str]:
+        """Map product_id -> friendly name (from the product dimension)."""
+        return {}
+
 
 # ============================ Local CSV provider ============================
 
@@ -101,9 +105,9 @@ class LocalCsvProvider(DataProvider):
                 return pd.read_csv(CSV_DIR / f"{name}.csv")
             except Exception:  # noqa: BLE001
                 return None
-        names = ["dim_customer", "dim_account", "dim_geography", "fact_subscription",
-                 "fact_invoice", "fact_work_order", "fact_usage_data", "fact_usage_voice",
-                 "ml_churn_score", "ml_crosssell_reco"]
+        names = ["dim_customer", "dim_account", "dim_geography", "dim_product",
+                 "fact_subscription", "fact_invoice", "fact_work_order", "fact_usage_data",
+                 "fact_usage_voice", "ml_churn_score", "ml_crosssell_reco"]
         return {n: rd(n) for n in names}
 
     @staticmethod
@@ -194,6 +198,18 @@ class LocalCsvProvider(DataProvider):
             return {}
         return {k: _json_safe(v) for k, v in hit.iloc[0].to_dict().items()}
 
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def _product_names_cached() -> tuple:
+        df = LocalCsvProvider._raw().get("dim_product")
+        if df is None or "product_id" not in df.columns:
+            return tuple()
+        return tuple((str(r["product_id"]), str(r.get("name", r["product_id"])))
+                     for r in df.to_dict("records"))
+
+    def product_names(self):
+        return dict(self._product_names_cached())
+
 
 # ============================ Fabric SQL provider ============================
 
@@ -271,6 +287,13 @@ class FabricSqlProvider(DataProvider):
             (customer_id,))
         return rows[0] if rows else {}
 
+    def product_names(self):
+        try:
+            rows = self._query(f"SELECT product_id, name FROM {GOLD}.dim_product", ())
+            return {str(r["product_id"]): str(r.get("name") or r["product_id"]) for r in rows}
+        except Exception:  # noqa: BLE001
+            return {}
+
 
 # ============================ Provider selection ============================
 
@@ -299,8 +322,29 @@ def _provider() -> DataProvider:
 
 # ============================ Public API (stable) ============================
 
+def _friendly_products(csv_list, pmap) -> str:
+    if not csv_list:
+        return ""
+    parts = [pmap.get(x.strip(), x.strip()) for x in str(csv_list).split(",") if x.strip()]
+    return ", ".join(parts)
+
+
+def _enrich_profile(profile: dict[str, Any], provider: DataProvider) -> dict[str, Any]:
+    """Add human-friendly product names alongside the raw product codes."""
+    if not profile:
+        return profile
+    pmap = provider.product_names()
+    if pmap:
+        profile["product_names"] = _friendly_products(profile.get("product_list"), pmap)
+        tc = profile.get("top_crosssell_product")
+        if tc:
+            profile["top_crosssell_product_name"] = pmap.get(str(tc), tc)
+    return profile
+
+
 def get_profile(customer_id: str) -> Optional[dict[str, Any]]:
-    return _provider().get_profile(customer_id)
+    p = _provider()
+    return _enrich_profile(p.get_profile(customer_id), p)
 
 
 def search_customers(query: str, limit: int = 10) -> list[dict[str, Any]]:
@@ -310,7 +354,7 @@ def search_customers(query: str, limit: int = 10) -> list[dict[str, Any]]:
 def get_account_detail(customer_id: str) -> Optional[dict[str, Any]]:
     """Rich line-of-business view: profile + invoices, work orders, usage series, churn."""
     p = _provider()
-    profile = p.get_profile(customer_id)
+    profile = _enrich_profile(p.get_profile(customer_id), p)
     if not profile:
         return None
     account_id = profile.get("account_id") or p.account_id_for(customer_id)

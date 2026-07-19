@@ -3,9 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
 <title>Contoso Telecom — Care Console</title>
 <style>
   :root{
+    color-scheme:light;
     --bg:#eef1f8; --card:#ffffff; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0;
     --primary:#4f46e5; --primary-d:#3730a3; --sky:#0ea5e9; --teal:#14b8a6;
     --ok:#16a34a; --warn:#d97706; --bad:#dc2626; --violet:#7c3aed;
@@ -284,7 +286,7 @@ function renderDetail(d){
   if(truthy(p.recent_outage_exposure))
     alerts.push(['bad','📡','Recent outage in customer area']);
   if(p.top_crosssell_product)
-    alerts.push(['info','✨','Cross-sell: '+p.top_crosssell_product+' (score '+val(p,'top_crosssell_score')+')']);
+    alerts.push(['info','✨','Cross-sell: '+(p.top_crosssell_product_name||p.top_crosssell_product)+' (score '+val(p,'top_crosssell_score')+')']);
   if(!alerts.length) alerts.push(['ok','✓','No active flags — account in good standing.']);
 
   const banner=`<div class="card"><div class="banner">
@@ -308,7 +310,7 @@ function renderDetail(d){
       ${kpi('Monthly (MRC)', money(p.total_mrc), val(p,'active_products')+' active products','')}
       ${kpi('Open Balance', money(p.open_balance), truthy(p.last_invoice_paid)?'current':'payment due','amber')}
       ${kpi('Last Invoice', money(p.last_invoice_amount), truthy(p.last_invoice_paid)?'paid':'unpaid','sky')}
-      ${kpi('Products', val(p,'product_list'), 'subscribed','teal')}
+      ${kpi('Products', val(p,'product_names')||val(p,'product_list'), 'subscribed','teal')}
     </div>`;
 
   const alertsCard=card('🔔','Account signals',`<div class="alerts">${alerts.map(a=>

@@ -41,7 +41,6 @@ def main() -> int:
         print("ERROR: AI_SEARCH_ENDPOINT not set (run infra/deploy.ps1 first).", file=sys.stderr)
         return 1
 
-    from azure.identity import DefaultAzureCredential
     from azure.search.documents import SearchClient
     from azure.search.documents.indexes import SearchIndexClient
     from azure.search.documents.indexes.models import (
@@ -49,7 +48,18 @@ def main() -> int:
         SemanticConfiguration, SemanticField, SemanticPrioritizedFields, SemanticSearch,
     )
 
-    cred = DefaultAzureCredential()
+    # Auth: prefer an admin API key (AI_SEARCH_ADMIN_KEY) so no data-plane RBAC/AAD setup is
+    # needed on the search service; fall back to Entra (DefaultAzureCredential).
+    admin_key = os.environ.get("AI_SEARCH_ADMIN_KEY")
+    if admin_key:
+        from azure.core.credentials import AzureKeyCredential
+        cred = AzureKeyCredential(admin_key)
+        print("Authenticating to AI Search with admin key.")
+    else:
+        from azure.identity import DefaultAzureCredential
+        cred = DefaultAzureCredential()
+        print("Authenticating to AI Search with Entra credential "
+              "(set AI_SEARCH_ADMIN_KEY to use a key instead).")
 
     fields = [
         SimpleField(name="id", type=SearchFieldDataType.String, key=True),

@@ -7,7 +7,7 @@
 #   web                -> Web IQ (external product docs, weather)
 #   connected_agents   -> orchestrator delegates to journey agents
 
-model: gpt-5-mini   # overridden by FOUNDRY_MODEL if set; must match the deployed model name
+model: gpt-4.1   # overridden by FOUNDRY_MODEL if set; must match the deployed model name
 
 # Legacy agent names to delete on deploy (renamed to the telco- prefix). Best-effort.
 retire:

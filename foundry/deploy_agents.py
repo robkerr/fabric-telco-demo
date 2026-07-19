@@ -12,7 +12,7 @@ ConnectedAgentTool; that needs preview workflow/A2A APIs). Each journey agent st
 
 Environment (from repo .env):
     FOUNDRY_PROJECT_ENDPOINT   Foundry project endpoint
-    FOUNDRY_MODEL              model *deployment* name (e.g. gpt-5-mini)
+    FOUNDRY_MODEL              model *deployment* name (e.g. gpt-4.1)
     FABRIC_CONNECTION_NAME     project connection name for the Fabric data agent
     AI_SEARCH_CONNECTION_NAME  project connection name for Azure AI Search
     AI_SEARCH_INDEX            search index name (default 'telco-knowledge')
@@ -109,7 +109,7 @@ def main() -> int:
         return 1
 
     spec = yaml.safe_load(SPEC.read_text(encoding="utf-8"))
-    model = os.environ.get("FOUNDRY_MODEL", spec.get("model", "gpt-5-mini"))
+    model = os.environ.get("FOUNDRY_MODEL", spec.get("model", "gpt-4.1"))
 
     from azure.ai.projects import AIProjectClient
     from azure.ai.projects.models import PromptAgentDefinition

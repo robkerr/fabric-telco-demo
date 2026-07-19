@@ -3,8 +3,8 @@ param location string
 param accountName string
 param projectName string
 param deployModel bool = true
-param modelName string = 'gpt-5-mini'
-param modelVersion string = '2025-08-07'
+param modelName string = 'gpt-4.1'
+param modelVersion string = '2025-04-14'
 param modelCapacity int = 50
 
 resource account 'Microsoft.CognitiveServices/accounts@2025-06-01' = {

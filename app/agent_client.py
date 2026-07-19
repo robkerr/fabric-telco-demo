@@ -103,10 +103,10 @@ def chat(message: str, profile: Optional[dict[str, Any]] = None) -> dict[str, An
     endpoint = os.environ.get("FOUNDRY_PROJECT_ENDPOINT")
     ids = _agent_ids()
     agent_name = route(message, profile)
-    agent_id = ids.get(agent_name)
-    if endpoint and agent_id:
+    agent_available = agent_name in ids
+    if endpoint and agent_available:
         try:
-            reply = _run_foundry(endpoint, agent_id, message, profile)
+            reply = _run_foundry(endpoint, agent_name, message, profile)
             return {"mode": "foundry", "agent": agent_name, "reply": reply}
         except Exception as ex:  # noqa: BLE001
             return {"mode": "foundry-error", "agent": agent_name,
@@ -114,28 +114,33 @@ def chat(message: str, profile: Optional[dict[str, Any]] = None) -> dict[str, An
     return {"mode": "local", "agent": agent_name, "reply": _local_reply(message, profile)}
 
 
-def _run_foundry(endpoint, agent_id, message, profile) -> str:
+def _run_foundry(endpoint, agent_name, message, profile) -> str:
     from azure.ai.projects import AIProjectClient
     from azure.identity import DefaultAzureCredential
 
-    project = AIProjectClient(endpoint=endpoint, credential=DefaultAzureCredential())
-    agents = project.agents
-    thread = agents.threads.create()
     content = message
     if profile:
         content = (f"[Customer 360 context]\n{json.dumps(profile, default=str)}\n\n"
                    f"[Customer request]\n{message}")
-    agents.messages.create(thread_id=thread.id, role="user", content=content)
-    run = agents.runs.create_and_process(thread_id=thread.id, agent_id=agent_id)
-    if getattr(run, "status", "") == "failed":
-        raise RuntimeError(getattr(run, "last_error", "run failed"))
-    msgs = list(agents.messages.list(thread_id=thread.id))
-    for m in msgs:
-        if getattr(m, "role", "") == "assistant":
-            parts = [t.text.value for t in getattr(m, "text_messages", []) if getattr(t, "text", None)]
-            if parts:
-                return "\n".join(parts)
-    return "(no assistant response)"
+
+    project = AIProjectClient(endpoint=endpoint, credential=DefaultAzureCredential(),
+                              allow_preview=True)
+    with project:
+        openai_client = project.get_openai_client(agent_name=agent_name)
+        response = openai_client.responses.create(input=content)
+        text = getattr(response, "output_text", None)
+        if text:
+            return text
+        # Fallback: walk the structured output for any text content.
+        parts: list[str] = []
+        for item in getattr(response, "output", []) or []:
+            for c in getattr(item, "content", []) or []:
+                t = getattr(c, "text", None)
+                if isinstance(t, str):
+                    parts.append(t)
+                elif t is not None and getattr(t, "value", None):
+                    parts.append(t.value)
+        return "\n".join(parts) if parts else "(no assistant response)"
 
 
 def _truthy(v) -> bool:

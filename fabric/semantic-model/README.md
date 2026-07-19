@@ -9,17 +9,15 @@ and reusable measures).
 [`model_spec.yaml`](model_spec.yaml) declares the tables, relationships, and DAX measures.
 It is tool-agnostic — you can apply it three ways:
 
-1. **Scripted (recommended):** `python create_semantic_model.py`
-   Uses [semantic-link-labs](https://github.com/microsoft/semantic-link-labs) to create the
-   Direct Lake model and add relationships + measures. Run it in a Fabric notebook, or from a
-   machine authenticated to Fabric (Azure CLI / service principal).
-   ```powershell
-   ./.venv/Scripts/pip install semantic-link-labs
-   ./.venv/Scripts/python fabric/semantic-model/create_semantic_model.py
-   ```
-2. **Portal:** in the Lakehouse, choose **New semantic model**, pick the gold tables, then add
-   the relationships and measures from `model_spec.yaml`.
-3. **Tabular Editor:** create the model, then paste the measures from `model_spec.yaml`.
+1. **Fabric notebook (recommended):** run `fabric/notebooks/06_create_semantic_model.ipynb`
+   in Fabric (attach your Lakehouse, **Run all**). It's generated from this spec by
+   `build_notebooks.py` and uses `semantic-link-labs` to create the Direct Lake model and
+   add the relationships + measures. This is the reproducible path (the SDK can't run on a
+   local Windows-on-Arm workstation, so it runs in Fabric like the data-agent notebook).
+2. **Script:** `python create_semantic_model.py` (same logic, for a machine authenticated to
+   Fabric via Azure CLI / a service principal).
+3. **Portal / Tabular Editor:** create the model from the gold tables, then add the
+   relationships and measures from `model_spec.yaml` as a checklist.
 
 ## Measures
 

@@ -72,3 +72,5 @@ Write-Host 'Next:' -ForegroundColor Green
 Write-Host '  1) ./scripts/verify_customer360.ps1'
 Write-Host '  2) In Fabric, open the "05_create_data_agent" notebook, attach the Lakehouse,'
 Write-Host '     Run all, then copy DATA_AGENT_ARTIFACT_ID + DATA_AGENT_MCP_ENDPOINT into .env.'
+Write-Host '  3) (Optional) In Fabric, open "06_create_semantic_model", attach the Lakehouse,'
+Write-Host '     Run all to build the Direct Lake semantic model (Power BI + FabricIQ layer).'

@@ -13,10 +13,14 @@ service) to the underlying tables, columns, and metrics.
 ## How it's used
 
 1. **Data Agent instructions** — the glossary and entity map inform
-   [`../data-agent/config.yaml`](../data-agent/config.yaml) `ai_instructions`.
+   [`../data-agent/config.yaml`](../data-agent/config.yaml) `ai_instructions` (**active** — this
+   is how the ontology grounds agents today).
 2. **Foundry agent grounding** — journey agents reference the same terms/signals.
-3. **Fabric Ontology item (optional)** — when authoring Fabric's native Ontology item, use this
-   file as the specification (entities, relationships, synonyms).
+3. **Fabric Ontology item (optional / out of scope)** — Fabric's *native* Ontology item is
+   still nascent and not cleanly scriptable, so this repo treats `ontology.yaml` as the
+   authoritative business-vocabulary **specification** rather than deploying a native item. If
+   you later author a native Fabric Ontology, use this file as the source of truth (entities,
+   relationships, synonyms).
 
 ## Structure
 

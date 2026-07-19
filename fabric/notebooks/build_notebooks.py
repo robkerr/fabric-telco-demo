@@ -13,6 +13,7 @@ Notebooks produced:
     03_build_silver_gold.ipynb    - curated dim_/fact_ tables (clean names)
     04_ml_scores.ipynb            - trained churn model (MLflow) + cross-sell + customer_360
     05_create_data_agent.ipynb    - create & publish the Fabric Data Agent (run in Fabric)
+    06_create_semantic_model.ipynb - Direct Lake semantic model + measures (run in Fabric)
 """
 from __future__ import annotations
 
@@ -23,6 +24,7 @@ import yaml
 
 HERE = Path(__file__).resolve().parent
 DATA_AGENT_CONFIG = HERE.parent / "data-agent" / "config.yaml"
+SEMANTIC_SPEC = HERE.parent / "semantic-model" / "model_spec.yaml"
 
 # All tables produced by the data generator (must match data/parquet/*.parquet).
 TABLES = [
@@ -523,10 +525,128 @@ def nb_05():
     ])
 
 
+# ----------------------------------------------------------------------------
+# 06 - create the Direct Lake semantic model (run inside Fabric)
+# ----------------------------------------------------------------------------
+def nb_06():
+    spec = yaml.safe_load(SEMANTIC_SPEC.read_text(encoding="utf-8"))
+    dataset = spec["name"]
+    tables = spec["tables"]
+    rels = spec.get("relationships", [])
+    measures = spec.get("measures", [])
+
+    return notebook([
+        md("# 06 - Create the Direct Lake semantic model",
+           "",
+           "Run this **inside Fabric** (after notebooks 01-04 have built the `gold` tables). It",
+           "creates a **Direct Lake** semantic model over the gold tables and adds the business",
+           "relationships and DAX measures from `fabric/semantic-model/model_spec.yaml`.",
+           "",
+           "**Steps:** attach your Telco Lakehouse as the notebook's default Lakehouse, then",
+           "**Run all**. The model reads Delta directly from OneLake (no import/refresh), so it",
+           "always reflects the latest notebook run.",
+           "",
+           "> Direct Lake authoring uses `semantic-link-labs`, which runs in Fabric (not on a",
+           "> local workstation). The spec below mirrors `model_spec.yaml`, the source of truth.",
+           "> Steps are best-effort: a `sempy_labs` version mismatch logs and continues rather",
+           "> than aborting, and you can always finish in the portal / Tabular Editor."),
+        code("%pip install --quiet semantic-link-labs"),
+        md("## Model spec (mirrors fabric/semantic-model/model_spec.yaml)"),
+        code(f"DATASET = {dataset!r}",
+             f"LAKEHOUSE_DEFAULT = {spec.get('lakehouse', 'TelcoLakehouse')!r}  # fallback only",
+             f"SCHEMA = {spec.get('schema', 'gold')!r}",
+             f"TABLES = {tables!r}",
+             f"RELATIONSHIPS = {rels!r}",
+             f"MEASURES = {measures!r}"),
+        md("## Resolve the current workspace + attached Lakehouse",
+           "",
+           "Uses whichever Lakehouse you attach as the notebook's default, so it works no matter",
+           "what you named it. `LAKEHOUSE_DEFAULT` is only a fallback."),
+        code("workspace_id = None",
+             "LAKEHOUSE = None",
+             "try:",
+             "    import notebookutils",
+             "    ctx = notebookutils.runtime.context",
+             "    workspace_id = ctx.get('currentWorkspaceId')",
+             "    LAKEHOUSE = ctx.get('defaultLakehouseName')",
+             "except Exception:",
+             "    pass",
+             "if not workspace_id:",
+             "    import sempy.fabric as fabric",
+             "    workspace_id = fabric.get_notebook_workspace_id()",
+             "if not LAKEHOUSE:",
+             "    LAKEHOUSE = LAKEHOUSE_DEFAULT",
+             "    print(f'WARNING: no default Lakehouse detected - falling back to {LAKEHOUSE!r}.')",
+             "print('Workspace:', workspace_id)",
+             "print('Lakehouse:', LAKEHOUSE)"),
+        md("## Create the Direct Lake model",
+           "",
+           "Creates the model over the gold tables. If your Lakehouse is schema-enabled, the",
+           "tables live in the `gold` schema; pass schema-qualified names when the API supports it."),
+        code("import sempy_labs as labs",
+             "from sempy_labs import directlake",
+             "",
+             "created = False",
+             "for tbls in ([f'{SCHEMA}.{t}' for t in TABLES], TABLES):",
+             "    try:",
+             "        directlake.generate_direct_lake_semantic_model(",
+             "            dataset=DATASET, lakehouse=LAKEHOUSE, workspace=workspace_id,",
+             "            lakehouse_tables=tbls, overwrite=True)",
+             "        created = True",
+             "        print('Created Direct Lake model', DATASET, 'with', len(tbls), 'tables.')",
+             "        break",
+             "    except Exception as ex:",
+             "        print('attempt failed:', ex)",
+             "if not created:",
+             "    print('Could not auto-create the model. Create it in the portal: Lakehouse ->')",
+             "    print('New semantic model -> pick the gold tables, then re-run the cell below',",
+             "          'to add relationships + measures.')"),
+        md("## Add relationships + business measures",
+           "",
+           "Applies the relationships and DAX measures from the spec via the Tabular Object Model."),
+        code("def _try(fn, label):",
+             "    try:",
+             "        fn(); print('  ok:', label)",
+             "    except Exception as ex:",
+             "        print('  skipped:', label, '(', ex, ')')",
+             "",
+             "try:",
+             "    with labs.tom.connect_semantic_model(",
+             "            dataset=DATASET, workspace=workspace_id, readonly=False) as tom:",
+             "        for rel in RELATIONSHIPS:",
+             "            ft, fc = rel['from'].split('.'); tt, tc = rel['to'].split('.')",
+             "            _try(lambda ft=ft, fc=fc, tt=tt, tc=tc: tom.add_relationship(",
+             "                from_table=ft, from_column=fc, to_table=tt, to_column=tc,",
+             "                from_cardinality='Many', to_cardinality='One'),",
+             "                f\"rel {rel['from']} -> {rel['to']}\")",
+             "        for m in MEASURES:",
+             "            _try(lambda m=m: tom.add_measure(",
+             "                table_name=m['table'], measure_name=m['name'],",
+             "                expression=m['expression'].strip(), format_string=m.get('format')),",
+             "                f\"measure {m['name']}\")",
+             "    print('Relationships + measures applied.')",
+             "except Exception as ex:",
+             "    print('Could not connect to the model via TOM:', ex)",
+             "    print('Apply model_spec.yaml with Tabular Editor or the portal instead.')"),
+        md("## Validate",
+           "",
+           "Lists the measures now on the model. It's ready for Power BI reports and for the",
+           "Fabric Data Agent / FabricIQ to consume as a business-friendly layer."),
+        code("try:",
+             "    import sempy.fabric as fabric",
+             "    dfM = fabric.list_measures(dataset=DATASET, workspace=workspace_id)",
+             "    print('measures on', DATASET, ':', len(dfM))",
+             "    display(dfM[['Table Name', 'Measure Name']] if len(dfM) else dfM)",
+             "except Exception as ex:",
+             "    print('list_measures unavailable:', ex)"),
+    ])
+
+
 if __name__ == "__main__":
     write("01_setup_lakehouse.ipynb", nb_01())
     write("02_load_bronze.ipynb", nb_02())
     write("03_build_silver_gold.ipynb", nb_03())
     write("04_ml_scores.ipynb", nb_04())
     write("05_create_data_agent.ipynb", nb_05())
+    write("06_create_semantic_model.ipynb", nb_06())
     print("Done.")

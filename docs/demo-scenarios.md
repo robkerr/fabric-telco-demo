@@ -6,7 +6,7 @@ seed/size, pick equivalent customers with the queries shown.
 
 > Run the web app locally first (`app/README.md`) — it works in **local mode** with no cloud, so
 > you can demo the Customer 360 + chat flow immediately. With the Fabric + Foundry pieces
-> deployed, the same flow uses live data and the orchestrator.
+> deployed, the same flow uses live data and the journey agents.
 
 Reference date of the dataset ("today"): **2026-06-30**.
 
@@ -91,6 +91,6 @@ telco-ServiceRetentionAgent + Web IQ (weather).
 
 After completing Phases 1–3, set the app to live mode by providing `FABRIC_SQL_ENDPOINT`,
 `FABRIC_LAKEHOUSE_NAME`, and `FOUNDRY_PROJECT_ENDPOINT` (plus the deployed
-`foundry/agents.generated.json`). The Customer 360 panel then reads from the Fabric SQL endpoint
-and chat is answered by the orchestrator, which delegates to the journey agents and the Fabric
-Data Agent. See [`setup-guide.md`](setup-guide.md).
+`foundry/agents.generated.json`). The Customer 360 panel then reads from the Fabric SQL endpoint,
+and chat is routed by the app to the matching journey agent, which grounds its answer in the
+Fabric Data Agent. See [`setup-guide.md`](setup-guide.md).

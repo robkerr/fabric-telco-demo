@@ -5,8 +5,8 @@ This document orients a developer who has just cloned the repo.
 ## Mental model
 
 - **Fabric is the data backend.** Everything the agents answer comes from the Fabric Lakehouse (via the Data Agent) or the SQL endpoint (for the deterministic `customer_360` fetch). If the data backend isn't working, nothing else will.
-- **Foundry is the brain.** The orchestrator routes to journey agents; those agents call the Fabric Data Agent and Foundry IQ.
-- **Everything is scripted.** Azure = Bicep. Fabric = REST/`fab` CLI + notebooks. Data = Python.
+- **Foundry runs the agents.** Three independent journey agents (gpt-4.1) call the Fabric Data Agent (+ AI Search / Bing). Intent routing is done **in the web app** (keyword + profile) — there is no orchestrator agent.
+- **Mostly scripted, some manual.** Data = Python. Fabric provisioning/load = PowerShell + notebooks. Foundry agents = `deploy_agents.ps1`. The **semantic model + ontology were built manually in the Fabric portal** (documented in their READMEs). Azure infra Bicep exists but this demo **reused an existing Foundry resource group/project**.
 
 ## Where things live
 
@@ -15,12 +15,12 @@ This document orients a developer who has just cloned the repo.
 | `data-generation/` | Python synthetic data generator. Start here to change the dataset. |
 | `data/` | Committed sample data (CSV + Parquet). Regenerate with `generate.py`. |
 | `fabric/notebooks/` | Lakehouse setup + medallion load + ML scores + `05_create_data_agent`. Run in Fabric. |
-| `fabric/semantic-model/`, `fabric/ontology/` | Fabric item definitions. |
+| `fabric/semantic-model/`, `fabric/ontology/` | Specs (`model_spec.yaml`, `ontology.yaml`) + READMEs for the **manually built** model + ontology. |
 | `fabric/data-agent/` | Data Agent `config.yaml` (embedded into the `05_create_data_agent` notebook). |
-| `scripts/` | PowerShell automation (SPN, provisioning, loading). |
-| `infra/` | Bicep for Azure resources. |
-| `foundry/` | Agent definitions + deployment. |
-| `app/`, `teams/` | UI surfaces. |
+| `scripts/` | PowerShell automation (SPN, provisioning, loading, `export_ontology.ps1`). |
+| `infra/` | Bicep for Azure resources (optional — this demo reused an existing Foundry RG). |
+| `foundry/` | Agent definitions + `deploy_agents.ps1` + `setup_knowledge.ps1` + `setup_tracing.ps1`. |
+| `app/` | Care Console web app (runs locally on CSV). `teams/` | Teams/M365 scaffolding (future). |
 
 ## Secrets
 
@@ -40,11 +40,14 @@ This document orients a developer who has just cloned the repo.
 
 ## Gotchas
 
-- **Fabric capacity must be F2+** for the Data Agent. The existing capacity is assumed to satisfy this.
-- **Same Entra tenant** is required for Foundry ↔ Fabric Data Agent (OBO auth).
+- **Foundry model must be gpt-4.1 / gpt-4o.** The Agent Service tools (Fabric / AI Search / Bing) are **not supported on gpt-5** in westus3 — the portal shows "not supported by the selected model" and agents return no tool data.
+- **`deploy_agents.ps1` runs as a user, not the SPN.** The Fabric Data Agent tool uses on-behalf-of auth (`az login` as a user with access to the data agent + data sources).
+- **Windows-on-Arm** can't run the Fabric Python SDKs (sempy / data-agent-sdk) locally — run those in Fabric notebooks / the portal.
+- **Fabric capacity must be F2+** for the Data Agent, in the **same Entra tenant** as Foundry.
 - **SPN workspace-admin grant** can be blocked by tenant policy; the setup guide has a manual fallback.
-- The **SQL analytics endpoint** name/connection string is discovered after the Lakehouse is created; scripts read it back from the Fabric API.
 
 ## Status / roadmap
 
-Track progress against the phases in the top-level plan. Phase 1 (data backend) is the gating deliverable; Phases 2–5 build on it.
+Phases 1–4 are complete (data backend, Fabric items, reused Foundry setup, agents, Care Console).
+Teams / M365 Copilot is scaffolded in `teams/` but not wired. See the status table in the
+[root README](../README.md).

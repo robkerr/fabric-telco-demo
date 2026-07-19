@@ -22,7 +22,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$OntologyName = 'TelcoCustomerServiceOntology',
+    [string]$OntologyName = 'TelcoOntology',
     [string]$OntologyId,                       # optional: use an explicit item id instead of name
     [switch]$UseSpn = $true
 )
@@ -55,16 +55,10 @@ if (-not $OntologyId) {
 }
 Write-Host "  ontology id: $OntologyId" -ForegroundColor DarkGray
 
-# --- 2. getDefinition (JSON format; handles the long-running operation) ---
+# --- 2. getDefinition (handles the long-running operation) ---
 Write-Host '== Fetching ontology definition ==' -ForegroundColor Cyan
-$def = Invoke-FabricLro -Path "/workspaces/$ws/items/$OntologyId/getDefinition?format=Ontology" `
-    -Token $token -Body @{}
+$def = Invoke-FabricLro -Path "/workspaces/$ws/items/$OntologyId/getDefinition" -Token $token -Body @{}
 $parts = $def.definition.parts
-if (-not $parts) {
-    # Some tenants return without a format hint; retry without it.
-    $def = Invoke-FabricLro -Path "/workspaces/$ws/items/$OntologyId/getDefinition" -Token $token -Body @{}
-    $parts = $def.definition.parts
-}
 if (-not $parts) { throw 'getDefinition returned no parts.' }
 
 # --- 3. Decode + write parts, preserving the folder layout ---

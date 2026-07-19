@@ -33,3 +33,6 @@ Thumbs.db
 # ---- Generated large data (keep committed sample small; ignore scaled-up runs) ----
 data/parquet/_scaled/
 data/csv/_scaled/
+
+# Raw ontology definition dump from scripts/export_ontology.ps1 (intermediate)
+fabric/ontology/_fabric_export/

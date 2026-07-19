@@ -652,6 +652,17 @@ def nb_06():
              "    display(dfM[['Table Name', 'Measure Name']] if len(dfM) else dfM)",
              "except Exception as ex:",
              "    print('list_measures unavailable:', ex)"),
+        md("## Next (optional): generate the Fabric IQ Ontology",
+           "",
+           "This Direct Lake model is the ideal source for a native **Ontology (preview)** item.",
+           "In Fabric, open this semantic model and choose **Generate Ontology** from the ribbon",
+           "(name it `TelcoCustomerServiceOntology`). Fabric creates entity types, properties +",
+           "data bindings, and relationships automatically. Then confirm entity keys, bind any",
+           "time-series properties (`fact_usage_data`, `fact_service_metric`), and verify",
+           "relationships. See `fabric/ontology/README.md` (uses `ontology.yaml` as the checklist).",
+           "",
+           "> Prereqs: tenant Ontology/Fabric IQ **preview** enabled; Direct Lake data bindings",
+           "> populate only when the Lakehouse workspace has **inbound public access enabled**."),
     ])
 
 

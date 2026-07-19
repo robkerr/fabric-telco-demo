@@ -16,11 +16,39 @@ service) to the underlying tables, columns, and metrics.
    [`../data-agent/config.yaml`](../data-agent/config.yaml) `ai_instructions` (**active** — this
    is how the ontology grounds agents today).
 2. **Foundry agent grounding** — journey agents reference the same terms/signals.
-3. **Fabric Ontology item (optional / out of scope)** — Fabric's *native* Ontology item is
-   still nascent and not cleanly scriptable, so this repo treats `ontology.yaml` as the
-   authoritative business-vocabulary **specification** rather than deploying a native item. If
-   you later author a native Fabric Ontology, use this file as the source of truth (entities,
-   relationships, synonyms).
+3. **Native Fabric Ontology item (deployable)** — Fabric IQ now has a native **Ontology
+   (preview)** item that you can **generate directly from the semantic model** we build in
+   notebook 06. `ontology.yaml` is the design spec/checklist for that item.
+
+## Deploying the native Fabric IQ Ontology (preview)
+
+Because notebook 06 creates a **Direct Lake** semantic model, generating the ontology from it
+produces entity types, **properties + live data bindings**, and relationships automatically
+(Direct Lake is the mode that binds data — Import mode only generates the shape).
+
+**Steps:**
+1. Run `fabric/notebooks/06_create_semantic_model.ipynb` to create the `TelcoCustomerService`
+   semantic model over the gold tables (relationships + measures included).
+2. In Fabric, open the semantic model (or its overview page) and choose **Generate Ontology**
+   from the ribbon. Name it `TelcoCustomerServiceOntology` (letters/numbers/underscores only)
+   and **Create**.
+3. Fabric creates entity types matching the gold tables (Customer, Account, Invoice, Outage,
+   WorkOrder, …), their properties/bindings, and relationships from the model.
+4. Finish manually (per Fabric IQ guidance): confirm each entity's **key**, bind any
+   **time-series** properties (e.g. `fact_usage_data`, `fact_service_metric`), and verify
+   relationship bindings. Use `ontology.yaml` as the checklist (entities, keys, synonyms,
+   journey signals).
+
+**Prerequisites / gotchas:**
+- Tenant **preview** settings for Ontology (Fabric IQ) must be enabled (admin toggle).
+- Direct Lake **data bindings** populate only when the backing Lakehouse's workspace has
+  **inbound public access enabled**; relationship bindings require an identified primary key.
+- Ontology supports **managed** Lakehouse tables only (ours are managed), and doesn't support
+  `Decimal`-typed columns (our numerics are float/double, so this is fine).
+
+> The Create Ontology REST API exists, but the *generate-from-semantic-model* operation is
+> portal-first in preview, so we drive it from the portal and keep `ontology.yaml` as the
+> reproducible source of truth.
 
 ## Structure
 

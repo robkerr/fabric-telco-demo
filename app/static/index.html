@@ -5,14 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Telco Agent Desktop</title>
 <style>
-  :root { --bg:#0f1115; --panel:#171a21; --accent:#3b82f6; --muted:#8b93a1; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --text:#e5e7eb; }
+  :root { --bg:#0f1115; --panel:#171a21; --accent:#3b82f6; --muted:#8b93a1; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --text:#e5e7eb; --line:#262b36; }
   * { box-sizing:border-box; }
   body { margin:0; font-family:Segoe UI,system-ui,sans-serif; background:var(--bg); color:var(--text); }
-  header { padding:14px 20px; background:var(--panel); border-bottom:1px solid #262b36; display:flex; align-items:center; gap:12px; }
+  header { padding:14px 20px; background:var(--panel); border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
   header h1 { font-size:16px; margin:0; font-weight:600; }
-  .badge { font-size:11px; padding:2px 8px; border-radius:10px; background:#262b36; color:var(--muted); }
+  .badge { font-size:11px; padding:2px 8px; border-radius:10px; background:var(--line); color:var(--muted); }
+  .spacer { flex:1; }
+  .btn { font:inherit; font-size:12px; padding:6px 12px; border-radius:8px; border:1px solid var(--line); background:#0d1016; color:var(--text); cursor:pointer; }
+  .btn:hover { border-color:#3a4252; }
+  .btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
   .layout { display:grid; grid-template-columns:320px 1fr; gap:16px; padding:16px; height:calc(100vh - 52px); }
-  .col { background:var(--panel); border:1px solid #262b36; border-radius:10px; padding:14px; overflow:auto; }
+  .col { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; overflow:auto; }
   input, button { font:inherit; }
   .search input { width:100%; padding:9px 11px; border-radius:8px; border:1px solid #2b323f; background:#0d1016; color:var(--text); }
   .result { padding:8px 10px; border-radius:7px; cursor:pointer; border:1px solid transparent; }
@@ -25,7 +29,7 @@
   .pill.active { background:rgba(34,197,94,.15); color:var(--ok); }
   .pill.suspended, .pill.High { background:rgba(239,68,68,.15); color:var(--bad); }
   .pill.Medium { background:rgba(245,158,11,.15); color:var(--warn); }
-  .pill.Low, .pill.cancelled { background:#262b36; color:var(--muted); }
+  .pill.Low, .pill.cancelled { background:var(--line); color:var(--muted); }
   .alerts { margin:12px 0; display:flex; flex-direction:column; gap:6px; }
   .alert { font-size:12px; padding:8px 10px; border-radius:7px; border-left:3px solid; }
   .alert.warn { background:rgba(245,158,11,.08); border-color:var(--warn); }
@@ -33,20 +37,62 @@
   .alert.info { background:rgba(59,130,246,.08); border-color:var(--accent); }
   .chat { display:flex; flex-direction:column; height:100%; }
   .messages { flex:1; overflow:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px; }
-  .msg { padding:10px 12px; border-radius:9px; max-width:80%; white-space:pre-wrap; font-size:13px; line-height:1.45; }
+  .msg { padding:10px 12px; border-radius:9px; max-width:82%; white-space:pre-wrap; font-size:13px; line-height:1.45; }
   .msg.user { align-self:flex-end; background:var(--accent); color:#fff; }
   .msg.bot { align-self:flex-start; background:#1e2430; border:1px solid #2b323f; }
-  .composer { display:flex; gap:8px; margin-top:10px; }
+  .msg .agenttag { font-size:11px; color:var(--muted); margin-bottom:4px; font-weight:600; display:flex; align-items:center; gap:6px; }
+  .msg .metaline { font-size:11px; color:var(--muted); margin-top:6px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .msg .inspect { cursor:pointer; color:var(--accent); text-decoration:underline; }
+  .status { font-size:12px; color:var(--muted); min-height:18px; display:flex; align-items:center; gap:8px; margin:6px 2px 0; }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block; }
+  .dot.busy { background:var(--warn); animation:pulse 1s infinite; }
+  .dot.idle { background:var(--ok); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .typing { display:inline-flex; gap:3px; }
+  .typing i { width:5px; height:5px; border-radius:50%; background:var(--muted); animation:bounce 1.2s infinite; }
+  .typing i:nth-child(2){ animation-delay:.2s } .typing i:nth-child(3){ animation-delay:.4s }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-4px);opacity:1} }
+  .composer { display:flex; gap:8px; margin-top:8px; }
   .composer input { flex:1; padding:10px 12px; border-radius:8px; border:1px solid #2b323f; background:#0d1016; color:var(--text); }
+  .composer input:disabled { opacity:.5; }
   .composer button { padding:10px 16px; border-radius:8px; border:0; background:var(--accent); color:#fff; cursor:pointer; }
+  .composer button:disabled { opacity:.5; cursor:not-allowed; }
   .muted { color:var(--muted); font-size:12px; }
+  /* Debug drawer */
+  #debug { position:fixed; top:0; right:0; width:420px; max-width:92vw; height:100vh; background:#12151c; border-left:1px solid var(--line); box-shadow:-8px 0 24px rgba(0,0,0,.4); transform:translateX(100%); transition:transform .2s ease; overflow:auto; z-index:50; }
+  #debug.open { transform:translateX(0); }
+  #debug .dhead { display:flex; align-items:center; padding:14px 16px; border-bottom:1px solid var(--line); position:sticky; top:0; background:#12151c; }
+  #debug .dhead h3 { margin:0; font-size:14px; flex:1; }
+  #debug .body { padding:14px 16px; font-size:12px; }
+  #debug h4 { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:16px 0 8px; }
+  #debug h4:first-child { margin-top:0; }
+  .drow { display:flex; justify-content:space-between; gap:12px; padding:3px 0; border-bottom:1px solid #1c212b; }
+  .drow span:first-child { color:var(--muted); }
+  .drow code { color:var(--text); font-size:11px; word-break:break-all; text-align:right; }
+  .score { display:grid; grid-template-columns:1fr auto; gap:4px 8px; align-items:center; margin:3px 0; }
+  .bar { height:8px; background:var(--line); border-radius:4px; overflow:hidden; }
+  .bar > i { display:block; height:100%; background:var(--accent); }
+  .score.win .bar > i { background:var(--ok); }
+  .chosen { color:var(--ok); font-weight:600; }
+  .kw { display:inline-block; background:var(--line); border-radius:4px; padding:1px 6px; margin:2px 3px 0 0; font-size:10px; color:var(--muted); }
+  .wf { display:flex; flex-direction:column; gap:5px; }
+  .wf .row { display:grid; grid-template-columns:120px 1fr 64px; gap:8px; align-items:center; }
+  .wf .row .label { color:var(--muted); font-size:11px; }
+  .wf .row .track { height:14px; background:var(--line); border-radius:4px; overflow:hidden; }
+  .wf .row .track > i { display:block; height:100%; background:var(--accent); }
+  .wf .row .t { text-align:right; font-size:11px; }
+  .tool { display:inline-block; background:rgba(59,130,246,.15); color:#93c5fd; border-radius:4px; padding:1px 7px; margin:2px 4px 0 0; font-size:10px; }
+  a.link { color:var(--accent); }
+  .err { color:var(--bad); }
 </style>
 </head>
 <body>
 <header>
   <h1>📞 Telco Agent Desktop</h1>
   <span class="badge" id="mode">…</span>
-  <span class="muted">Customer 360 hydrates on contact · chat auto-routes to the right Foundry journey agent</span>
+  <span class="badge" id="trace">tracing: …</span>
+  <span class="spacer"></span>
+  <button class="btn" id="debugBtn">🐞 Debug</button>
 </header>
 
 <div class="layout">
@@ -61,6 +107,7 @@
     <div class="profile" id="profile"><p class="muted">Select a customer to load their 360 profile.</p></div>
     <div class="chat">
       <div class="messages" id="messages"></div>
+      <div class="status" id="status"><span class="dot idle"></span><span id="statusText">Ready</span></div>
       <div class="composer">
         <input id="chatInput" placeholder="Ask about billing, service, offers…" />
         <button id="sendBtn">Send</button>
@@ -69,19 +116,29 @@
   </div>
 </div>
 
+<div id="debug">
+  <div class="dhead"><h3>🐞 Debug — last turn</h3><button class="btn" id="debugClose">Close</button></div>
+  <div class="body" id="debugBody"><p class="muted">Send a message to see routing, timing, and trace details.</p></div>
+</div>
+
 <script>
 let current = null;
+let busy = false;
+const debugLog = [];   // one entry per bot turn
 
 async function j(url, opts) { const r = await fetch(url, opts); if (!r.ok) throw new Error(await r.text()); return r.json(); }
 
 (async () => {
-  try { const h = await j('/api/health'); document.getElementById('mode').textContent = 'data: ' + h.data_mode; }
-  catch { document.getElementById('mode').textContent = 'offline'; }
+  try {
+    const h = await j('/api/health');
+    document.getElementById('mode').textContent = 'data: ' + h.data_mode;
+    document.getElementById('trace').textContent = 'tracing: ' + (h.tracing ? 'on' : 'off');
+  } catch { document.getElementById('mode').textContent = 'offline'; }
 })();
 
+// ---- search ----
 const qEl = document.getElementById('q');
 let t; qEl.addEventListener('input', () => { clearTimeout(t); t = setTimeout(runSearch, 250); });
-
 async function runSearch() {
   const q = qEl.value.trim(); if (!q) { document.getElementById('results').innerHTML = ''; return; }
   try {
@@ -98,60 +155,204 @@ function val(p, k) { const v = p[k]; return (v === '' || v == null) ? '—' : v;
 function truthy(v) { return v === true || v === 'True' || v === 1 || v === '1'; }
 
 async function loadProfile(id) {
-  current = id;
-  const p = await j('/api/profile/' + id);
-  const alerts = [];
-  if (truthy(p.last_invoice_is_first_bill) && !truthy(p.last_invoice_paid))
-    alerts.push(['warn', `Unpaid FIRST bill: $${val(p,'last_invoice_amount')} (activation + proration)`]);
-  if (String(p.risk_band).toLowerCase() === 'high')
-    alerts.push(['bad', `High churn risk — ${val(p,'churn_top_reason')}`]);
-  if (truthy(p.recent_outage_exposure))
-    alerts.push(['bad', 'Recent outage in customer area']);
-  if (p.top_crosssell_product)
-    alerts.push(['info', `Cross-sell: ${p.top_crosssell_product} (score ${val(p,'top_crosssell_score')})`]);
+  setStatus('busy', 'Fetching 360 profile from Fabric…');
+  try {
+    const p = await j('/api/profile/' + id);
+    current = id;
+    const alerts = [];
+    if (truthy(p.last_invoice_is_first_bill) && !truthy(p.last_invoice_paid))
+      alerts.push(['warn', `Unpaid FIRST bill: $${val(p,'last_invoice_amount')} (activation + proration)`]);
+    if (String(p.risk_band).toLowerCase() === 'high')
+      alerts.push(['bad', `High churn risk — ${val(p,'churn_top_reason')}`]);
+    if (truthy(p.recent_outage_exposure))
+      alerts.push(['bad', 'Recent outage in customer area']);
+    if (p.top_crosssell_product)
+      alerts.push(['info', `Cross-sell: ${p.top_crosssell_product} (score ${val(p,'top_crosssell_score')})`]);
 
-  document.getElementById('profile').innerHTML = `
-    <h2>${p.first_name} ${p.last_name}
-      <span class="pill ${p.account_status}">${p.account_status||''}</span>
-      <span class="pill ${p.risk_band}">${p.risk_band||''} risk</span>
-    </h2>
-    <div class="alerts">${alerts.map(a => `<div class="alert ${a[0]}">${a[1]}</div>`).join('')}</div>
-    <div class="kv">
-      <div>Customer ID</div><div>${val(p,'customer_id')}</div>
-      <div>Segment</div><div>${val(p,'segment')}</div>
-      <div>Tenure</div><div>${val(p,'tenure_months')} months</div>
-      <div>Location</div><div>${val(p,'city')}, ${val(p,'state')} ${val(p,'zip')}</div>
-      <div>Products</div><div>${val(p,'product_list')}</div>
-      <div>Monthly (MRC)</div><div>$${val(p,'total_mrc')}</div>
-      <div>Open balance</div><div>$${val(p,'open_balance')}</div>
-      <div>Last invoice</div><div>$${val(p,'last_invoice_amount')} (${truthy(p.last_invoice_paid)?'paid':'unpaid'})</div>
-    </div>`;
-  addMsg('bot', `Loaded 360 profile for ${p.first_name} ${p.last_name}. How can I help this customer?`);
+    document.getElementById('profile').innerHTML = `
+      <h2>${p.first_name} ${p.last_name}
+        <span class="pill ${p.account_status}">${p.account_status||''}</span>
+        <span class="pill ${p.risk_band}">${p.risk_band||''} risk</span>
+      </h2>
+      <div class="alerts">${alerts.map(a => `<div class="alert ${a[0]}">${a[1]}</div>`).join('')}</div>
+      <div class="kv">
+        <div>Customer ID</div><div>${val(p,'customer_id')}</div>
+        <div>Segment</div><div>${val(p,'segment')}</div>
+        <div>Tenure</div><div>${val(p,'tenure_months')} months</div>
+        <div>Location</div><div>${val(p,'city')}, ${val(p,'state')} ${val(p,'zip')}</div>
+        <div>Products</div><div>${val(p,'product_list')}</div>
+        <div>Monthly (MRC)</div><div>$${val(p,'total_mrc')}</div>
+        <div>Open balance</div><div>$${val(p,'open_balance')}</div>
+        <div>Last invoice</div><div>$${val(p,'last_invoice_amount')} (${truthy(p.last_invoice_paid)?'paid':'unpaid'})</div>
+      </div>`;
+    addMsg('bot', `Loaded 360 profile for ${p.first_name} ${p.last_name}. How can I help this customer?`);
+    setStatus('idle', 'Ready');
+  } catch (e) {
+    setStatus('idle', 'Ready');
+    document.getElementById('profile').innerHTML = '<p class="err">Failed to load profile.</p>';
+  }
 }
 
-function addMsg(role, text, agent) {
+// ---- chat message rendering ----
+function addMsg(role, text, opts) {
+  opts = opts || {};
   const d = document.createElement('div'); d.className = 'msg ' + role;
-  if (agent) {
-    const tag = document.createElement('div');
-    tag.style.cssText = 'font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;';
-    tag.textContent = agent;
+  if (opts.agent) {
+    const tag = document.createElement('div'); tag.className = 'agenttag';
+    tag.innerHTML = `<span>${opts.agent}</span>` + (opts.mode ? `<span class="badge">${opts.mode}</span>` : '');
     d.appendChild(tag);
-    d.appendChild(document.createTextNode(text));
-  } else {
-    d.textContent = text;
   }
+  d.appendChild(document.createTextNode(text));
+  if (opts.meta) d.appendChild(opts.meta);
   const m = document.getElementById('messages'); m.appendChild(d); m.scrollTop = m.scrollHeight;
+  return d;
+}
+
+function makeTyping(agent) {
+  const d = document.createElement('div'); d.className = 'msg bot';
+  d.innerHTML = `<div class="agenttag"><span>${agent||'Routing…'}</span></div>
+    <span class="typing"><i></i><i></i><i></i></span>`;
+  const m = document.getElementById('messages'); m.appendChild(d); m.scrollTop = m.scrollHeight;
+  return d;
+}
+
+let timerHandle = null;
+function setStatus(kind, text, since) {
+  const dot = document.querySelector('#status .dot');
+  dot.className = 'dot ' + (kind === 'busy' ? 'busy' : 'idle');
+  const el = document.getElementById('statusText');
+  if (since) {
+    if (timerHandle) clearInterval(timerHandle);
+    timerHandle = setInterval(() => {
+      el.textContent = text + ' ' + ((performance.now() - since) / 1000).toFixed(1) + 's';
+    }, 100);
+  } else {
+    if (timerHandle) { clearInterval(timerHandle); timerHandle = null; }
+    el.textContent = text;
+  }
 }
 
 async function send() {
+  if (busy) return;
   const el = document.getElementById('chatInput'); const text = el.value.trim(); if (!text) return;
   addMsg('user', text); el.value = '';
+  setBusy(true);
+
+  // 1) fast routing preview so we can show which agent we'll call
+  let agentName = null, routing = null;
+  try {
+    routing = await j('/api/route', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ message: text, customer_id: current }) });
+    agentName = routing.chosen;
+  } catch {}
+
+  const started = performance.now();
+  setStatus('busy', 'Contacting ' + (agentName || 'agent') + '…', started);
+  const bubble = makeTyping(agentName);
+
+  // 2) run the agent
   try {
     const res = await j('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ message: text, customer_id: current }) });
-    addMsg('bot', res.reply, res.agent);
-  } catch (e) { addMsg('bot', 'Error contacting the agent.'); }
+    bubble.remove();
+    const dbg = res.debug || {};
+    const meta = buildMeta(dbg, debugLog.length);
+    addMsg('bot', res.reply, { agent: res.agent, mode: res.mode, meta });
+    debugLog.push({ input: text, res, routing });
+    renderDebug(debugLog.length - 1);
+  } catch (e) {
+    bubble.remove();
+    addMsg('bot', 'Error contacting the agent: ' + e.message, { agent: agentName||'', mode:'error' });
+  } finally {
+    setBusy(false);
+  }
 }
+
+function buildMeta(dbg, idx) {
+  const span = document.createElement('div'); span.className = 'metaline';
+  const bits = [];
+  const total = dbg.timing_ms && dbg.timing_ms.total;
+  if (total != null) bits.push(`⏱ ${(total/1000).toFixed(1)}s`);
+  if (dbg.usage && dbg.usage.total_tokens != null) bits.push(`🔤 ${dbg.usage.total_tokens} tok`);
+  span.innerHTML = bits.map(b => `<span>${b}</span>`).join('') +
+    ` <span class="inspect" onclick="openDebug(${idx})">inspect ›</span>`;
+  return span;
+}
+
+function setBusy(v) {
+  busy = v;
+  document.getElementById('chatInput').disabled = v;
+  document.getElementById('sendBtn').disabled = v;
+  if (!v) setStatus('idle', 'Ready');
+  else document.getElementById('chatInput').blur();
+}
+
+// ---- debug drawer ----
+const drawer = document.getElementById('debug');
+document.getElementById('debugBtn').addEventListener('click', () => drawer.classList.toggle('open'));
+document.getElementById('debugClose').addEventListener('click', () => drawer.classList.remove('open'));
+function openDebug(idx) { renderDebug(idx); drawer.classList.add('open'); document.getElementById('debugBtn').classList.add('active'); }
+
+function esc(s) { return String(s==null?'':s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function renderDebug(idx) {
+  const entry = debugLog[idx]; if (!entry) return;
+  const { input, res } = entry; const d = res.debug || {};
+  const r = d.routing || {}; const scores = r.scores || {};
+  const maxScore = Math.max(1, ...Object.values(scores));
+  const spans = d.spans || []; const maxMs = Math.max(1, ...spans.map(s => s.ms));
+
+  const scoreRows = Object.entries(scores).map(([name, sc]) => {
+    const win = name === r.chosen;
+    const kws = (r.matched && r.matched[name]) || [];
+    return `<div class="score ${win?'win':''}">
+        <div>${win?'✓ ':''}<span class="${win?'chosen':''}">${esc(short(name))}</span>
+          ${kws.length?`<div>${kws.map(k=>`<span class="kw">${esc(k)}</span>`).join('')}</div>`:''}
+        </div>
+        <div style="text-align:right">${sc}</div>
+        <div class="bar" style="grid-column:1/3"><i style="width:${(sc/maxScore*100)}%"></i></div>
+      </div>`;
+  }).join('');
+
+  const wf = spans.map(s => `<div class="row">
+      <div class="label">${esc(s.name)}</div>
+      <div class="track"><i style="width:${(s.ms/maxMs*100)}%"></i></div>
+      <div class="t">${s.ms>=1000?(s.ms/1000).toFixed(2)+'s':Math.round(s.ms)+'ms'}</div>
+    </div>`).join('');
+
+  const u = d.usage || {};
+  const ai = d.app_insights || {};
+  const rows = [];
+  rows.push(row('Mode', `<code>${esc(res.mode)}</code>`));
+  rows.push(row('Chosen agent', `<code class="chosen">${esc(res.agent)}</code>`));
+  rows.push(row('Reason', `<code>${esc(r.reason)}</code>`));
+  rows.push(row('Tools on agent', (r.agent_tools||[]).map(x=>`<span class="tool">${esc(x)}</span>`).join('') || '—'));
+  rows.push(row('Input chars', `<code>${esc(d.input_chars)}</code>`));
+  rows.push(row('360 context sent', `<code>${d.context_included?'yes':'no'}</code>`));
+  if (u.input_tokens!=null) rows.push(row('Tokens (in/out)', `<code>${u.input_tokens} / ${u.output_tokens}</code>`));
+  if (d.response_id) rows.push(row('Response id', `<code>${esc(d.response_id)}</code>`));
+  if (d.trace_id) rows.push(row('Trace id', `<code>${esc(d.trace_id)}</code>`));
+  if (d.error) rows.push(row('Error', `<code class="err">${esc(d.error)}</code>`));
+
+  let traceLinks = '';
+  if (ai.name) {
+    traceLinks = `<h4>Trace</h4>
+      <div class="muted" style="margin-bottom:6px">Full agent-internal spans (tool calls) flow to App Insights <code>${esc(ai.name)}</code> — allow 1–3 min.</div>`;
+    if (ai.portal_url) traceLinks += `<a class="link" href="${ai.portal_url}" target="_blank">Open Transaction Search in Azure portal ›</a>`;
+    if (d.trace_id) traceLinks += `<div class="muted" style="margin-top:6px">Filter by operation Id = <code>${esc(d.trace_id)}</code></div>`;
+  }
+
+  document.getElementById('debugBody').innerHTML = `
+    <h4>Input</h4><div class="drow"><span>message</span><code>${esc(input)}</code></div>
+    <h4>Routing decision</h4>${scoreRows}
+    ${(r.nudges&&r.nudges.length)?`<div class="muted" style="margin-top:6px">${r.nudges.map(esc).join('<br>')}</div>`:''}
+    <h4>App timeline</h4><div class="wf">${wf}</div>
+    <h4>Details</h4>${rows.join('')}
+    ${traceLinks}`;
+}
+function row(k, v) { return `<div class="drow"><span>${k}</span>${v}</div>`; }
+function short(n) { return n.replace('telco-','').replace('Agent',''); }
+
 document.getElementById('sendBtn').addEventListener('click', send);
 document.getElementById('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
 </script>

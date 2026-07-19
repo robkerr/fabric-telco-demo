@@ -45,7 +45,24 @@ class ChatRequest(BaseModel):
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "data_mode": data_access.mode()}
+    return {
+        "status": "ok",
+        "data_mode": data_access.mode(),
+        "tracing": bool(os.environ.get("APPLICATIONINSIGHTS_CONNECTION_STRING")),
+        "app_insights": os.environ.get("APP_INSIGHTS_NAME"),
+    }
+
+
+class RouteRequest(BaseModel):
+    message: str
+    customer_id: str | None = None
+
+
+@app.post("/api/route")
+def route_preview(req: RouteRequest):
+    """Fast routing decision (no agent call) so the UI can show what it will do."""
+    prof = data_access.get_profile(req.customer_id) if req.customer_id else None
+    return agent_client.route_detail(req.message, prof)
 
 
 @app.get("/api/search")

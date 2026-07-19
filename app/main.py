@@ -6,7 +6,7 @@ Endpoints:
   GET  /api/health            -> mode (live/local)
   GET  /api/search?q=...      -> customer lookup
   GET  /api/profile/{id}      -> customer_360 profile (fetch-on-contact)
-  POST /api/chat              -> route a message to the Foundry orchestrator
+  POST /api/chat              -> auto-route a message to the best Foundry journey agent
 
 Run locally:
   uvicorn main:app --reload --port 8000   (from the app/ folder)

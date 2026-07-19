@@ -46,7 +46,7 @@
 <header>
   <h1>📞 Telco Agent Desktop</h1>
   <span class="badge" id="mode">…</span>
-  <span class="muted">Customer 360 hydrates on contact · chat routes to the Foundry orchestrator</span>
+  <span class="muted">Customer 360 hydrates on contact · chat auto-routes to the right Foundry journey agent</span>
 </header>
 
 <div class="layout">
@@ -129,8 +129,17 @@ async function loadProfile(id) {
   addMsg('bot', `Loaded 360 profile for ${p.first_name} ${p.last_name}. How can I help this customer?`);
 }
 
-function addMsg(role, text) {
-  const d = document.createElement('div'); d.className = 'msg ' + role; d.textContent = text;
+function addMsg(role, text, agent) {
+  const d = document.createElement('div'); d.className = 'msg ' + role;
+  if (agent) {
+    const tag = document.createElement('div');
+    tag.style.cssText = 'font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;';
+    tag.textContent = agent;
+    d.appendChild(tag);
+    d.appendChild(document.createTextNode(text));
+  } else {
+    d.textContent = text;
+  }
   const m = document.getElementById('messages'); m.appendChild(d); m.scrollTop = m.scrollHeight;
 }
 
@@ -140,7 +149,7 @@ async function send() {
   try {
     const res = await j('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ message: text, customer_id: current }) });
-    addMsg('bot', res.reply);
+    addMsg('bot', res.reply, res.agent);
   } catch (e) { addMsg('bot', 'Error contacting the agent.'); }
 }
 document.getElementById('sendBtn').addEventListener('click', send);

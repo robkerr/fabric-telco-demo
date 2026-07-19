@@ -2,7 +2,8 @@
 
 A FastAPI app that demonstrates the **live-agent context pattern**: when the agent opens a
 customer, the app hydrates a **Customer 360** profile from the Fabric SQL analytics endpoint,
-and the chat panel routes messages to the **Foundry orchestrator**.
+and the chat panel **auto-routes** each message to the right **Foundry journey agent**
+(billing / cross-sell / service-retention) using lightweight keyword + profile signals.
 
 ## Two modes (automatic)
 
@@ -11,9 +12,10 @@ and the chat panel routes messages to the **Foundry orchestrator**.
 | **live** | `FABRIC_SQL_ENDPOINT` + `FABRIC_LAKEHOUSE_NAME` set and `pyodbc` available | `customer_360` on the Fabric SQL endpoint |
 | **local** | otherwise | committed sample data in `../data/csv` |
 
-Chat likewise uses the Foundry orchestrator when `FOUNDRY_PROJECT_ENDPOINT` +
+Chat likewise routes to a Foundry journey agent when `FOUNDRY_PROJECT_ENDPOINT` +
 `foundry/agents.generated.json` are present, else a local summary reply. This means the app
-is fully demoable **without any cloud** — great for a first run.
+is fully demoable **without any cloud** — great for a first run. The reply is tagged with the
+journey agent that answered.
 
 ## Run locally
 
@@ -32,7 +34,7 @@ cd app
 | GET | `/api/health` | Reports data mode (live/local) |
 | GET | `/api/search?q=` | Customer lookup |
 | GET | `/api/profile/{id}` | Customer 360 fetch-on-contact |
-| POST | `/api/chat` | Route a message to the orchestrator |
+| POST | `/api/chat` | Auto-route a message to the best journey agent |
 
 ## Deploy to Azure
 

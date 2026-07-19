@@ -38,9 +38,11 @@ must be **published** (Phase 1) and in the **same Entra tenant** as Foundry (on-
 ## Foundry IQ knowledge source (product literature / KB)
 
 [`knowledge/`](knowledge) holds sample product literature. To use it as a Foundry IQ
-knowledge source, create the Azure AI Search index and upload the docs:
+knowledge source, install the Foundry Python deps, then create the Azure AI Search index and
+upload the docs:
 
 ```powershell
+./.venv/Scripts/python -m pip install -r foundry/requirements.txt
 ./.venv/Scripts/python foundry/setup_knowledge.py
 ```
 

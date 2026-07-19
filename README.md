@@ -9,7 +9,7 @@ Everything is reproducible from this repo with **Windows PowerShell** + **Fabric
 Some Fabric steps (semantic model, ontology, publishing the Data Agent) are done **manually in
 the Fabric portal** and are documented step-by-step.
 
-![Telco Care Console](docs/images/care-console.png)
+![Telco Care Console](docs/images/care-console.jpg)
 
 *The Care Console: a Customer 360 (identity, churn-risk gauge, KPIs, invoices, work orders, usage
 charts) on the left, and an Agent Assist chat that routes to Foundry journey agents on the right.*
@@ -104,7 +104,7 @@ The Care Console runs fully locally off the committed sample data — no Azure/F
 
 ```powershell
 ./scripts/00_prereqs.ps1                                  # creates .venv + installs deps
-python ./data-generation/generate.py --customers 1000     # writes data/csv + data/parquet
+python ./data-generation/generate.py --customers 1000     # writes data/csv + data/parquet (note: repo has a sample 1000 customer set, only run this if you want to create a new data set)
 ./.venv/Scripts/pip install -r app/requirements.txt
 cd app; ../.venv/Scripts/python -m uvicorn main:app --port 8000
 # open http://localhost:8000  — search "Natasha Ryan" or "CUST000001"

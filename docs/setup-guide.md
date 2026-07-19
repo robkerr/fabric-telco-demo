@@ -31,6 +31,7 @@ Copy-Item .env.example .env
 ## 1. Data backend (Fabric) — PRIORITY
 
 ### 1a. Generate synthetic data (local, no cloud needed)
+Note: Optional -- the repo contains a sample set of 1000 customers. You can use this data or use the generate.py script to generate a new data set.
 ```powershell
 python ./data-generation/generate.py --customers 1000
 # Output: data/csv/*.csv and data/parquet/*.parquet

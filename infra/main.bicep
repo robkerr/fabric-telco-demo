@@ -16,8 +16,8 @@ param tenantId string = subscription().tenantId
 param deployModel bool = true
 
 @description('Model to deploy for the agents.')
-param modelName string = 'gpt-4o'
-param modelVersion string = '2024-11-20'
+param modelName string = 'gpt-5-mini'
+param modelVersion string = '2025-08-07'
 
 @description('Optional Fabric SQL analytics endpoint for the web app (customer_360 fetch).')
 param fabricSqlEndpoint string = ''

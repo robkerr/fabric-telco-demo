@@ -126,7 +126,7 @@ def main() -> int:
         return 1
 
     spec = yaml.safe_load(SPEC.read_text(encoding="utf-8"))
-    model = os.environ.get("FOUNDRY_MODEL", spec.get("model", "gpt-4o"))
+    model = os.environ.get("FOUNDRY_MODEL", spec.get("model", "gpt-5-mini"))
     ctx = {
         "workspace_id": os.environ.get("FABRIC_WORKSPACE_ID"),
         "artifact_id": os.environ.get("DATA_AGENT_ARTIFACT_ID"),

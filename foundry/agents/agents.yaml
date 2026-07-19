@@ -7,7 +7,7 @@
 #   web                -> Web IQ (external product docs, weather)
 #   connected_agents   -> orchestrator delegates to journey agents
 
-model: gpt-4o   # overridden by FOUNDRY_MODEL if set
+model: gpt-5-mini   # overridden by FOUNDRY_MODEL if set; must match the deployed model name
 
 agents:
   - key: orchestrator

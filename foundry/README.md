@@ -20,6 +20,41 @@ telco-ServiceRetentionAgent      (degradation + retention)  -> Fabric Data Agent
   the Fabric data agent and its data sources.
 - The tool **connections** below must exist in the project and their names set in `.env`.
 
+## Required Foundry resources (what the next dev must have)
+
+This demo **reused an existing Azure AI Foundry resource group and project** rather than
+deploying a new one. To run `deploy_agents.ps1` against your own environment, you need:
+
+1. **An Azure AI Foundry project** (a project on an AI Foundry / AIServices account). Put its
+   endpoint in `.env` as `FOUNDRY_PROJECT_ENDPOINT`
+   (`https://<account>.services.ai.azure.com/api/projects/<project>`).
+2. **A `gpt-4.1` model deployment** on that project's account, named `gpt-4.1`
+   (`.env` `FOUNDRY_MODEL=gpt-4.1`). ⚠️ The Agent Service tools (Fabric / AI Search / Bing)
+   are **not supported on the gpt-5 family in westus3** — use gpt-4.1 (or gpt-4o).
+   Deploy with:
+   ```powershell
+   az cognitiveservices account deployment create -g <rg> -n <account> `
+     --deployment-name gpt-4.1 --model-name gpt-4.1 --model-version 2025-04-14 `
+     --model-format OpenAI --sku-name GlobalStandard --sku-capacity 50
+   ```
+3. **Three project connections** (create in the Foundry portal), names recorded in `.env`:
+   - **Microsoft Fabric** connection to your published data agent (`FABRIC_CONNECTION_NAME`).
+     It's a "Custom Keys" connection holding `workspace-id` = `FABRIC_WORKSPACE_ID` and
+     `artifact-id` = `DATA_AGENT_ARTIFACT_ID`.
+   - **Azure AI Search** connection to your search service (`AI_SEARCH_CONNECTION_NAME`), with
+     the `telco-knowledge` index built by `foundry/setup_knowledge.py`.
+   - **Bing grounding** connection for Web IQ (`BING_CONNECTION_NAME`, optional).
+4. **The Fabric Data Agent published** (Phase 1) in the **same Entra tenant** as Foundry.
+5. Your **user identity** has access to the Foundry project, the Fabric data agent, and its
+   data sources (OBO).
+
+Optional: run `foundry/setup_tracing.ps1` to provision + connect Application Insights so agent
+runs are traced (see "Tracing / observability" below).
+
+If you're standing up fresh Azure resources instead of reusing some, `infra/` contains Bicep
+that provisions a Foundry account+project, AI Search, Key Vault, and Log Analytics — see
+[`../infra/`](../infra).
+
 ## Deploy
 
 ```powershell

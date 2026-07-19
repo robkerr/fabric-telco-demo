@@ -50,6 +50,7 @@ def main() -> int:
     spec = yaml.safe_load(SPEC.read_text(encoding="utf-8"))
     dataset = spec["name"]
     lakehouse = os.environ.get("FABRIC_LAKEHOUSE_NAME", spec["lakehouse"])
+    schema = spec.get("schema", "gold")
 
     try:
         import sempy_labs as labs
@@ -60,16 +61,21 @@ def main() -> int:
         return 1
 
     # 1. Create the Direct Lake model over the selected tables.
+    # API (current): generate_direct_lake_semantic_model(dataset, tables, source, ...)
+    # 'tables' are schema-qualified (gold.<name>); 'source' is the Lakehouse.
     print(f"Creating Direct Lake model '{dataset}' over lakehouse '{lakehouse}' ...")
     _try(
         lambda: directlake.generate_direct_lake_semantic_model(
             dataset=dataset,
-            lakehouse=lakehouse,
+            tables=[f"{schema}.{t}" for t in spec["tables"]],
+            source=lakehouse,
+            source_type="Lakehouse",
             workspace=workspace_id,
-            lakehouse_tables=spec["tables"],
             overwrite=True,
         ),
-        alt=lambda: labs.create_blank_semantic_model(dataset=dataset, workspace=workspace_id),
+        alt=lambda: directlake.generate_direct_lake_semantic_model(
+            dataset=dataset, tables=spec["tables"], source=lakehouse,
+            source_type="Lakehouse", workspace=workspace_id, overwrite=True),
         label="create model",
     )
 

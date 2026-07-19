@@ -50,6 +50,21 @@ produces entity types, **properties + live data bindings**, and relationships au
 > portal-first in preview, so we drive it from the portal and keep `ontology.yaml` as the
 > reproducible source of truth.
 
+## Syncing `ontology.yaml` back from a hand-designed Fabric ontology
+
+If you design/refine the ontology directly in Fabric, pull it back into the repo so the YAML
+stays in sync:
+
+```powershell
+./scripts/export_ontology.ps1   # -OntologyName TelcoCustomerServiceOntology (default)
+```
+
+This calls the Fabric REST `getDefinition` API, decodes the base64 definition **parts**, and
+writes them under `fabric/ontology/_fabric_export/` (`.platform`, `definition.json`,
+`EntityTypes/<id>/…`, `RelationshipTypes/<id>/…`). Commit or share that folder and
+`ontology.yaml` can be regenerated to match the real Fabric design (entity types, properties,
+data bindings, relationships).
+
 ## Structure
 
 | Section | Contents |

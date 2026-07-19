@@ -61,21 +61,27 @@ def main() -> int:
         return 1
 
     # 1. Create the Direct Lake model over the selected tables.
-    # API (current): generate_direct_lake_semantic_model(dataset, tables, source, ...)
-    # 'tables' are schema-qualified (gold.<name>); 'source' is the Lakehouse.
+    # The semantic-link-labs signature drifts across versions (source vs lakehouse,
+    # with/without overwrite); inspect and pass only supported params.
+    import inspect
+    fn = directlake.generate_direct_lake_semantic_model
+    fn_params = set(inspect.signature(fn).parameters)
+
+    def _model_kwargs(tbls):
+        kw = {"dataset": dataset, "tables": tbls}
+        kw["source" if "source" in fn_params else "lakehouse"] = lakehouse
+        if "source_type" in fn_params:
+            kw["source_type"] = "Lakehouse"
+        if "workspace" in fn_params:
+            kw["workspace"] = workspace_id
+        if "overwrite" in fn_params:
+            kw["overwrite"] = True
+        return kw
+
     print(f"Creating Direct Lake model '{dataset}' over lakehouse '{lakehouse}' ...")
     _try(
-        lambda: directlake.generate_direct_lake_semantic_model(
-            dataset=dataset,
-            tables=[f"{schema}.{t}" for t in spec["tables"]],
-            source=lakehouse,
-            source_type="Lakehouse",
-            workspace=workspace_id,
-            overwrite=True,
-        ),
-        alt=lambda: directlake.generate_direct_lake_semantic_model(
-            dataset=dataset, tables=spec["tables"], source=lakehouse,
-            source_type="Lakehouse", workspace=workspace_id, overwrite=True),
+        lambda: fn(**_model_kwargs([f"{schema}.{t}" for t in spec["tables"]])),
+        alt=lambda: fn(**_model_kwargs(spec["tables"])),
         label="create model",
     )
 

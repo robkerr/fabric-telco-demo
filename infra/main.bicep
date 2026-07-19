@@ -22,6 +22,9 @@ param modelVersion string = '2024-11-20'
 @description('Optional Fabric SQL analytics endpoint for the web app (customer_360 fetch).')
 param fabricSqlEndpoint string = ''
 
+@description('Create RBAC role assignments (Foundry->Search, WebApp->Key Vault). Requires the deployer to have Owner or User Access Administrator. Set false if you only have Contributor.')
+param deployRoleAssignments bool = true
+
 var suffix = uniqueString(resourceGroup().id)
 var storageName = toLower('telco${suffix}')
 var searchName = '${namePrefix}-search-${suffix}'
@@ -85,7 +88,7 @@ module appService 'modules/appservice.bicep' = {
   }
 }
 
-module rbac 'modules/rbac.bicep' = {
+module rbac 'modules/rbac.bicep' = if (deployRoleAssignments) {
   name: 'rbac'
   params: {
     searchName: search.outputs.searchName

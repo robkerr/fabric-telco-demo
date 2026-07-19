@@ -1,14 +1,24 @@
 # Foundry Agents (Phase 3)
 
-The agent platform: an **orchestrator** plus three **journey agents**, grounded in the
-Fabric Data Agent and Foundry IQ knowledge sources.
+Three **independent journey agents**, each grounded in the Fabric Data Agent and Foundry IQ
+knowledge sources:
 
 ```
-TelcoOrchestrator
-├─ BillingFirstBillAgent      (first-bill support)      -> Fabric Data Agent
-├─ CrossSellAgent            (acquisition + cross-sell) -> Fabric Data Agent + AI Search + Web
-└─ ServiceRetentionAgent     (degradation + retention)  -> Fabric Data Agent + Web
+BillingFirstBillAgent      (first-bill support)      -> Fabric Data Agent
+CrossSellAgent             (acquisition + cross-sell) -> Fabric Data Agent + AI Search + Web
+ServiceRetentionAgent      (degradation + retention)  -> Fabric Data Agent + Web
 ```
+
+> Note: automatic orchestrator/connected-agent delegation is **not** wired. The current Foundry
+> SDK (`azure-ai-projects` 2.x) has no `ConnectedAgentTool` — multi-agent orchestration needs the
+> preview workflow/A2A APIs. Each agent stands alone and can be invoked directly.
+
+## Prerequisites
+
+- **Sign in as a user** (`az login`). The Fabric data agent tool uses identity passthrough
+  (On-Behalf-Of) and does **not** support service principals. The signed-in user needs access to
+  the Fabric data agent and its data sources.
+- The tool **connections** below must exist in the project and their names set in `.env`.
 
 ## Deploy
 
@@ -17,8 +27,9 @@ az login
 ./foundry/deploy_agents.ps1
 ```
 
-This creates the agents in the Foundry project (`FOUNDRY_PROJECT_ENDPOINT`) from
-[`agents/agents.yaml`](agents/agents.yaml) and writes their IDs to `agents.generated.json`.
+Creates the agents in the project (`FOUNDRY_PROJECT_ENDPOINT`) from
+[`agents/agents.yaml`](agents/agents.yaml) via `project.agents.create_version(...)`, and writes
+their name/id/version to `agents.generated.json`.
 
 ## Connections (set these up once, then re-run deploy)
 

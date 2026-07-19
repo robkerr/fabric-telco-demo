@@ -4,13 +4,17 @@
 
 .DESCRIPTION
     Installs the Foundry Python deps into the repo venv and runs the agent deployment,
-    which creates the orchestrator + journey agents in the Foundry project and wires the
-    Fabric Data Agent, Azure AI Search, and Web IQ tools (best-effort).
+    which creates the three independent journey agents in the Foundry project and wires the
+    Fabric Data Agent, Azure AI Search, and (optional) Web IQ tools (best-effort).
 
 .NOTES
-    Requires infra/deploy.ps1 to have set FOUNDRY_PROJECT_ENDPOINT, and (ideally) the
-    05_create_data_agent notebook to have been run in Fabric so DATA_AGENT_ARTIFACT_ID is set
-    in .env. Authenticate with 'az login' (DefaultAzureCredential) before running.
+    Requires FOUNDRY_PROJECT_ENDPOINT + FOUNDRY_MODEL and the tool connection names
+    (FABRIC_CONNECTION_NAME, AI_SEARCH_CONNECTION_NAME) in .env. Create the connections in
+    the Foundry portal first.
+
+    IMPORTANT: the Fabric data agent tool uses identity passthrough (OBO) and does NOT support
+    service principals. Sign in as a USER with 'az login' (a user who has access to the Fabric
+    data agent + its data sources) before running.
 #>
 [CmdletBinding()]
 param()

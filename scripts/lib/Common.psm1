@@ -214,6 +214,63 @@ function Invoke-FabricLro {
     throw "Long-running operation timed out after $TimeoutSec s."
 }
 
+function Get-KustoToken {
+    <#
+      Returns a bearer token for a Fabric Eventhouse (Kusto) data plane. The audience must be
+      the cluster's own URI (queryServiceUri), e.g. https://<id>.kusto.fabric.microsoft.com.
+      SPN from .env, else signed-in az user.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Resource,   # the cluster/queryService URI
+        [switch]$UseSpn
+    )
+    $env = Import-DotEnv
+    $res = $Resource.TrimEnd('/')
+    if ($UseSpn -or ($env.SPN_APP_ID -and $env.SPN_CLIENT_SECRET)) {
+        if (-not ($env.SPN_APP_ID -and $env.SPN_CLIENT_SECRET -and $env.SPN_TENANT_ID)) {
+            throw "SPN requested but SPN_APP_ID/SPN_CLIENT_SECRET/SPN_TENANT_ID are not all set in .env. Run setup_spn.ps1."
+        }
+        $body = @{
+            client_id     = $env.SPN_APP_ID
+            client_secret = $env.SPN_CLIENT_SECRET
+            grant_type    = 'client_credentials'
+            scope         = "$res/.default"
+        }
+        $tokenUri = "https://login.microsoftonline.com/$($env.SPN_TENANT_ID)/oauth2/v2.0/token"
+        return (Invoke-RestMethod -Method Post -Uri $tokenUri -Body $body `
+                -ContentType 'application/x-www-form-urlencoded').access_token
+    }
+    Assert-Command az 'Install the Azure CLI.'
+    $token = az account get-access-token --resource $res --query accessToken -o tsv
+    if (-not $token) { throw "Failed to obtain a Kusto token via 'az account get-access-token'." }
+    return $token
+}
+
+function Invoke-KustoMgmt {
+    <#
+      Runs a Kusto management/query command against a Fabric Eventhouse KQL database via the
+      REST endpoint {queryUri}/v1/rest/mgmt. Returns the parsed response. Use for
+      .create/.drop/.ingest/.show commands. For queries pass -Query to hit /v1/rest/query.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$QueryUri,   # queryServiceUri, e.g. https://<guid>.kusto.fabric.microsoft.com
+        [Parameter(Mandatory)][string]$Database,
+        [Parameter(Mandatory)][string]$Csl,        # the command/query text
+        [string]$Token,
+        [switch]$Query,                            # hit /v1/rest/query instead of /v1/rest/mgmt
+        [int]$TimeoutSec = 300
+    )
+    if (-not $Token) { $Token = Get-KustoToken }
+    $leaf = if ($Query) { 'query' } else { 'mgmt' }
+    $uri = "$($QueryUri.TrimEnd('/'))/v1/rest/$leaf"
+    $headers = @{ Authorization = "Bearer $Token"; Accept = 'application/json' }
+    $payload = @{ db = $Database; csl = $Csl } | ConvertTo-Json -Depth 4
+    return Invoke-RestMethod -Method Post -Uri $uri -Headers $headers `
+        -Body $payload -ContentType 'application/json' -TimeoutSec $TimeoutSec
+}
+
 Export-ModuleMember -Function Get-RepoRoot, Get-DotEnvPath, Import-DotEnv, Set-DotEnvValue, `
     Assert-Command, Get-FabricToken, Invoke-FabricApi, Get-StorageToken, Send-OneLakeFile, `
-    Invoke-FabricLro
+    Invoke-FabricLro, Get-KustoToken, Invoke-KustoMgmt

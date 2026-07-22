@@ -131,6 +131,7 @@ Each area has its own focused README:
 | Fabric notebooks (Lakehouse, medallion, ML, Data Agent) | [`fabric/notebooks/`](fabric/notebooks) |
 | Semantic model (manual, portal) | [`fabric/semantic-model/README.md`](fabric/semantic-model/README.md) |
 | Ontology (manual, Fabric IQ) | [`fabric/ontology/README.md`](fabric/ontology/README.md) |
+| Real-Time Intelligence (Eventhouse / KQL) | [`fabric/eventhouse/README.md`](fabric/eventhouse/README.md) |
 | Fabric Data Agent config | [`fabric/data-agent/`](fabric/data-agent) |
 | Azure infra (Bicep, optional) | [`infra/`](infra) |
 | Foundry agents + prerequisites | [`foundry/README.md`](foundry/README.md) |
@@ -144,6 +145,7 @@ Each area has its own focused README:
 | 1 — Fabric data backend | Done | Lakehouse (bronze/silver/gold), synthetic data, trained churn model, `customer_360`, published Data Agent |
 | — Semantic model | Done (manual) | `TelcoCustomerService`, built in the portal from `model_spec.yaml` |
 | — Ontology (Fabric IQ) | Done (manual) | `TelcoOntology` — 11 entities, 10 relationships; second data agent over it |
+| — Real-Time Intelligence (Eventhouse/KQL) | Done | `telco_realtime` Eventhouse: `OutageEvents` + `WebSessions` (customer-keyed); generated + loaded by script. Ontology binding is manual (documented) |
 | 2 — Azure / Foundry setup | Done | Reused an existing Foundry resource group + project; gpt-4.1; AI Search index; App Insights tracing |
 | 3 — Foundry agents | Done | 3 journey agents (gpt-4.1) with Fabric / AI Search / Bing tools; app-side routing (no orchestrator) |
 | 4 — Web app (Care Console) | Done | Local-CSV mode; live Fabric SQL 360 is a one-flag future |
@@ -162,9 +164,9 @@ Each area has its own focused README:
 
 ```
 data-generation/  synthetic telco data generator (Python)
-data/             generated sample data (CSV + Parquet), committed
-fabric/           notebooks, semantic-model spec, ontology, data-agent config
-scripts/          PowerShell automation (prereqs, SPN, provision, load, ontology export)
+data/             generated sample data (CSV + Parquet + KQL CSVs), committed
+fabric/           notebooks, semantic-model spec, ontology, eventhouse (KQL), data-agent config
+scripts/          PowerShell automation (prereqs, SPN, provision, load, eventhouse, ontology export)
 infra/            Azure resources (Bicep) — optional, for fresh deployments
 foundry/          Foundry agent definitions + deploy + knowledge/tracing setup
 app/              Care Console web app (FastAPI)

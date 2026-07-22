@@ -1,0 +1,119 @@
+{
+  "generated_at": "2026-07-22T16:36:39.264469Z",
+  "seed": 42,
+  "as_of_date": "2026-06-30",
+  "tables": {
+    "OutageEvents": {
+      "file": "outage_events.csv",
+      "rows": 380,
+      "columns": [
+        [
+          "event_id",
+          "string"
+        ],
+        [
+          "customer_id",
+          "string"
+        ],
+        [
+          "geo_id",
+          "string"
+        ],
+        [
+          "event_time",
+          "datetime"
+        ],
+        [
+          "outage_type",
+          "string"
+        ],
+        [
+          "severity",
+          "string"
+        ],
+        [
+          "status",
+          "string"
+        ],
+        [
+          "affected_service",
+          "string"
+        ],
+        [
+          "duration_minutes",
+          "real"
+        ],
+        [
+          "restored_time",
+          "datetime"
+        ],
+        [
+          "reported_by_customer",
+          "bool"
+        ]
+      ]
+    },
+    "WebSessions": {
+      "file": "web_sessions.csv",
+      "rows": 1870,
+      "columns": [
+        [
+          "session_id",
+          "string"
+        ],
+        [
+          "customer_id",
+          "string"
+        ],
+        [
+          "session_start",
+          "datetime"
+        ],
+        [
+          "session_end",
+          "datetime"
+        ],
+        [
+          "duration_seconds",
+          "real"
+        ],
+        [
+          "device_type",
+          "string"
+        ],
+        [
+          "browser",
+          "string"
+        ],
+        [
+          "os",
+          "string"
+        ],
+        [
+          "entry_page",
+          "string"
+        ],
+        [
+          "exit_page",
+          "string"
+        ],
+        [
+          "page_views",
+          "long"
+        ],
+        [
+          "referrer",
+          "string"
+        ],
+        [
+          "authenticated",
+          "bool"
+        ],
+        [
+          "converted",
+          "bool"
+        ]
+      ]
+    }
+  }
+}

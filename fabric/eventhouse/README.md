@@ -88,9 +88,15 @@ Invoke-KustoMgmt -QueryUri $e.KQL_QUERY_URI -Database $e.KQL_DATABASE_NAME -Toke
 
 ## 3. Bind into the ontology (manual — done in Fabric IQ)
 
-Connect these tables to the existing `TelcoOntology` so the ontology Data Agent can traverse
-them. In the ontology editor, add two entity types sourced from the Eventhouse (KQL) tables and
-relate them to `Customer` (and `Geography`):
+Connect these tables to the existing `TelcoOntology`. There are **two valid ways** to bind a
+KQL table, and they're queried very differently — pick based on how you want the Data Agent to
+reason about the data.
+
+### Model A — separate entity type (discrete, countable events)
+
+Bind each KQL table as its **own entity type** (one row = one entity instance) and relate it to
+`Customer`/`Geography`. Best when you want to **count/list/traverse** events
+("how many outages did this customer have?", "list their sessions").
 
 | Entity type | Bound KQL table | Key |
 |---|---|---|
@@ -107,9 +113,38 @@ Suggested relationships (the **mapping table** is the KQL table itself — it ho
 
 \* the mapping table carries `geo_id`, so bind Geography's side to that column.
 
+Query it by **traversing the graph** (GQL):
+
+```gql
+MATCH (c:Customer)-[:customer_has_outage_event]->(o:OutageEvent)
+WHERE c.customer_id == "CUST000005"
+RETURN c.customer_id, o.event_id, o.event_time, o.outage_type, o.severity, o.affected_service
+ORDER BY o.event_time ASC
+```
+
+### Model B — time-series binding on the Customer entity (temporal signals)
+
+Add the KQL table as a **second binding on the existing `Customer` entity** (not a new entity):
+entity key `customer_id → customer_id`, **timestamp column** `event_time` (or `session_start`),
+and the remaining columns become **time-varying properties of Customer**. Best for
+**signals over time** attached to the customer. In this model there is **no `OutageEvent`
+node** — you don't traverse to a child; the data is properties *of* Customer.
+
+Verify a time-series binding:
+1. **Customer → View entity type details → Configure → Manage property bindings** — you should see
+   **two bindings** (the static Lakehouse `dim_customer` one + the Eventhouse time-series one),
+   with the outage/session columns bound and the key mapping `customer_id → customer_id`. That
+   binding *is* the connection to Customer.
+2. **Explore** experience → select a Customer instance (e.g. `CUST000005`) → view its time-series
+   properties over time (CUST000005 has two outage points: 2026-06-28 and 2026-05-09).
+3. Ask `TelcoOntologyDataAgent`: *"What outages has customer CUST000005 experienced and when?"* —
+   it reads the time-series properties off Customer (no graph traversal).
+
+> Rule of thumb: **Model A** for discrete events you count/list/traverse; **Model B** for
+> time-series signals you trend per customer. You can even do both (e.g. entity for outages,
+> time-series for sessions).
+
 > See [`../ontology/README.md`](../ontology/README.md) for the relationship mapping-table rule.
-> Once bound, questions like "has this customer had any recent outages?" or "how many web
-> sessions did they have this month?" resolve through the ontology Data Agent.
 
 ## Notes
 

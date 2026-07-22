@@ -110,6 +110,19 @@ name, instructions, and the example queries you can paste in the UI.
 
 **Phase 1 done when:** committed data is loaded, `customer_360` returns rows over the SQL endpoint, and the Data Agent answers journey questions.
 
+### 1g. Real-time data (Eventhouse / KQL) — optional
+
+Adds a `telco_realtime` Eventhouse with two customer-keyed tables (`OutageEvents`,
+`WebSessions`) that get bound into the ontology. Full details + ontology-binding steps:
+[`fabric/eventhouse/README.md`](../fabric/eventhouse/README.md).
+
+```powershell
+python ./data-generation/generate_realtime.py     # reads data/csv customers -> data/kql/*.csv
+./scripts/30_provision_eventhouse.ps1             # creates the Eventhouse + tables, loads the data
+```
+Requires the workspace **capacity to be running** (resume it if paused). Then bind the two KQL
+tables into `TelcoOntology` (manual, in Fabric IQ).
+
 ## 2. Azure / Foundry setup
 
 You need an **Azure AI Foundry project** with a **gpt-4.1** deployment and three project

@@ -29,6 +29,7 @@ import pandas as pd
 OUTAGE_COLUMNS = [
     ("event_id", "string"),
     ("customer_id", "string"),
+    ("account_id", "string"),
     ("geo_id", "string"),
     ("event_time", "datetime"),
     ("outage_type", "string"),
@@ -84,6 +85,15 @@ def _iso(dt: datetime) -> str:
     return dt.isoformat(sep=" ", timespec="seconds")
 
 
+def _customer_account_map(csv_dir: Path) -> dict[str, str]:
+    """Map customer_id -> account_id (one account per customer in this dataset)."""
+    try:
+        acct = pd.read_csv(csv_dir / "dim_account.csv", usecols=["account_id", "customer_id"])
+    except Exception:  # noqa: BLE001
+        return {}
+    return dict(zip(acct["customer_id"].astype(str), acct["account_id"].astype(str)))
+
+
 def _customer_services(csv_dir: Path) -> dict[str, list[str]]:
     """Map customer_id -> list of friendly service labels from their active products."""
     try:
@@ -116,6 +126,7 @@ def generate_outage_events(csv_dir: Path, as_of: datetime, rng: np.random.Genera
                            cfg: dict) -> pd.DataFrame:
     cust = pd.read_csv(csv_dir / "dim_customer.csv", usecols=["customer_id", "geo_id"])
     services = _customer_services(csv_dir)
+    accounts = _customer_account_map(csv_dir)
     window = int(cfg.get("outage_window_days", 30))
     recent_geos = _recent_outage_geos(csv_dir, as_of, window)
 
@@ -145,6 +156,7 @@ def generate_outage_events(csv_dir: Path, as_of: datetime, rng: np.random.Genera
             rows.append({
                 "event_id": None,
                 "customer_id": c["customer_id"],
+                "account_id": accounts.get(str(c["customer_id"]), ""),
                 "geo_id": c["geo_id"],
                 "event_time": _iso(event_time),
                 "outage_type": rng.choice(_OUTAGE_TYPES),

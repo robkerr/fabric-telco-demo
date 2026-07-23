@@ -33,9 +33,10 @@ $ehName = if ($env.EVENTHOUSE_NAME) { $env.EVENTHOUSE_NAME } else { 'telco_realt
 # Table schemas (KQL column defs). Order must match the CSV columns produced by the generator.
 $tables = [ordered]@{
     OutageEvents = @(
-        'event_id:string', 'customer_id:string', 'geo_id:string', 'event_time:datetime',
-        'outage_type:string', 'severity:string', 'status:string', 'affected_service:string',
-        'duration_minutes:real', 'restored_time:datetime', 'reported_by_customer:bool')
+        'event_id:string', 'customer_id:string', 'account_id:string', 'geo_id:string',
+        'event_time:datetime', 'outage_type:string', 'severity:string', 'status:string',
+        'affected_service:string', 'duration_minutes:real', 'restored_time:datetime',
+        'reported_by_customer:bool')
     WebSessions  = @(
         'session_id:string', 'customer_id:string', 'session_start:datetime', 'session_end:datetime',
         'duration_seconds:real', 'device_type:string', 'browser:string', 'os:string',
@@ -82,18 +83,28 @@ Set-DotEnvValue -Key 'KQL_QUERY_URI' -Value $queryUri | Out-Null
 
 $kustoToken = Get-KustoToken -UseSpn -Resource $queryUri
 
-# --- 3. Create the tables (idempotent) ---
+# --- 3. Create/refresh the tables + ingest ---
+# When ingesting, drop + recreate so schema changes (e.g. added columns) apply cleanly and the
+# CSV column order always matches the table. With -SkipIngest, create-merge non-destructively.
 Write-Host '== Creating tables ==' -ForegroundColor Cyan
 foreach ($t in $tables.Keys) {
     $cols = ($tables[$t] -join ', ')
-    Invoke-KustoMgmt -QueryUri $queryUri -Database $dbName -Token $kustoToken `
-        -Csl ".create-merge table $t ($cols)" | Out-Null
-    Write-Host "  ensured table $t"
+    if ($SkipIngest) {
+        Invoke-KustoMgmt -QueryUri $queryUri -Database $dbName -Token $kustoToken `
+            -Csl ".create-merge table $t ($cols)" | Out-Null
+        Write-Host "  ensured table $t"
+    } else {
+        Invoke-KustoMgmt -QueryUri $queryUri -Database $dbName -Token $kustoToken `
+            -Csl ".drop table $t ifexists" | Out-Null
+        Invoke-KustoMgmt -QueryUri $queryUri -Database $dbName -Token $kustoToken `
+            -Csl ".create table $t ($cols)" | Out-Null
+        Write-Host "  (re)created table $t"
+    }
 }
 
 if ($SkipIngest) { Write-Host 'Skipping ingest (-SkipIngest).' -ForegroundColor Yellow; return }
 
-# --- 4. Ingest the committed CSV data (chunked inline; replaces existing rows) ---
+# --- 4. Ingest the committed CSV data (chunked inline; tables were just recreated empty) ---
 Write-Host '== Ingesting data ==' -ForegroundColor Cyan
 foreach ($t in $tables.Keys) {
     $csvPath = Join-Path $root "data\kql\$($csvFor[$t])"
@@ -101,10 +112,6 @@ foreach ($t in $tables.Keys) {
         Write-Warning "  $csvPath not found - run generate_realtime.py first. Skipping $t."
         continue
     }
-    # clear existing rows so re-runs don't duplicate
-    Invoke-KustoMgmt -QueryUri $queryUri -Database $dbName -Token $kustoToken `
-        -Csl ".clear table $t data" | Out-Null
-
     $lines = [System.IO.File]::ReadAllLines($csvPath)
     $data = $lines | Select-Object -Skip 1 | Where-Object { $_ -ne '' }   # drop header + blanks
     $total = $data.Count

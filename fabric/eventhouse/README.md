@@ -24,6 +24,7 @@ All column types are chosen to be **Fabric IQ ontology-binding compatible**:
 |---|---|---|
 | `event_id` | string | key (`OEV############`) |
 | `customer_id` | string | → Customer |
+| `account_id` | string | → Account (the outage affects the account; one account per customer) |
 | `geo_id` | string | → Geography |
 | `event_time` | datetime | when the outage began affecting the customer |
 | `outage_type` | string | Fiber cut / Power loss / Equipment failure / Weather / Congestion |
@@ -103,10 +104,13 @@ Bind each KQL table as its **own entity type** (one row = one entity instance) a
 | `OutageEvent` | `OutageEvents` | `event_id` |
 | `WebSession` | `WebSessions` | `session_id` |
 
-Suggested relationships (the **mapping table** is the KQL table itself — it holds both keys):
+Suggested relationships (the **mapping table** is the KQL table itself — it holds both keys).
+`OutageEvents` carries **both** `account_id` and `customer_id`, so relate outages to **Account**
+(recommended — an outage affects the account) and/or Customer:
 
 | Relationship | From → To | Mapping table | from_key → to_key |
 |---|---|---|---|
+| `account_has_outage_event` | Account → OutageEvent | `OutageEvents` | account_id → event_id |
 | `customer_has_outage_event` | Customer → OutageEvent | `OutageEvents` | customer_id → event_id |
 | `outage_event_in_geography` | OutageEvent → Geography | `OutageEvents` | event_id → geo_id* |
 | `customer_has_web_session` | Customer → WebSession | `WebSessions` | customer_id → session_id |
@@ -125,10 +129,11 @@ ORDER BY o.event_time ASC
 ### Model B — time-series binding on the Customer entity (temporal signals)
 
 Add the KQL table as a **second binding on the existing `Customer` entity** (not a new entity):
-entity key `customer_id → customer_id`, **timestamp column** `event_time` (or `session_start`),
-and the remaining columns become **time-varying properties of Customer**. Best for
-**signals over time** attached to the customer. In this model there is **no `OutageEvent`
-node** — you don't traverse to a child; the data is properties *of* Customer.
+entity key `customer_id → customer_id` (or `account_id → account_id` to bind on **Account**),
+**timestamp column** `event_time` (or `session_start`), and the remaining columns become
+**time-varying properties** of that entity. Best for **signals over time** attached to the
+customer/account. In this model there is **no `OutageEvent` node** — you don't traverse to a
+child; the data is properties *of* the entity.
 
 Verify a time-series binding:
 1. **Customer → View entity type details → Configure → Manage property bindings** — you should see

@@ -112,16 +112,21 @@ name, instructions, and the example queries you can paste in the UI.
 
 ### 1g. Real-time data (Eventhouse / KQL) — optional
 
-Adds a `telco_realtime` Eventhouse with two customer-keyed tables (`OutageEvents`,
-`WebSessions`) that get bound into the ontology. Full details + ontology-binding steps:
-[`fabric/eventhouse/README.md`](../fabric/eventhouse/README.md).
+Adds a `telco_realtime` Eventhouse with real-time tables that bind into the ontology. The
+recommended real-time model is **`DeviceMetrics`** (per-device telemetry) bound as a time-series
+feed on a **`Device`** entity (from the gold `dim_customer_device` dimension). Full details +
+ontology-binding steps + agent guidance: [`fabric/eventhouse/README.md`](../fabric/eventhouse/README.md).
 
 ```powershell
-python ./data-generation/generate_realtime.py     # reads data/csv customers -> data/kql/*.csv
+# dim_customer_device is produced by generate.py and loaded by the medallion notebooks (02-03).
+python ./data-generation/generate_realtime.py     # -> data/kql/device_metrics.csv, outage_events.csv, web_sessions.csv
 ./scripts/30_provision_eventhouse.ps1             # creates the Eventhouse + tables, loads the data
+# optional live real-time demo:
+./scripts/stream_device_metrics.ps1 -AccountId ACCT000001 -IntervalSec 5 -Count 30
 ```
-Requires the workspace **capacity to be running** (resume it if paused). Then bind the two KQL
-tables into `TelcoOntology` (manual, in Fabric IQ).
+Requires the workspace **capacity to be running** (resume it if paused). Then in Fabric IQ: add a
+`Device` entity (static from `gold.dim_customer_device`) + `account_has_device`, and bind
+`DeviceMetrics` as **time-series** on Device.
 
 ## 2. Azure / Foundry setup
 

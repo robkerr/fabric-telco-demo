@@ -27,7 +27,7 @@ DATA_AGENT_CONFIG = HERE.parent / "data-agent" / "config.yaml"
 # All tables produced by the data generator (must match data/parquet/*.parquet).
 TABLES = [
     "dim_geography", "dim_product", "dim_plan", "dim_device", "dim_promotion",
-    "dim_customer", "dim_account", "fact_subscription", "fact_invoice",
+    "dim_customer", "dim_account", "dim_customer_device", "fact_subscription", "fact_invoice",
     "fact_invoice_line", "fact_usage_data", "fact_usage_voice", "fact_coverage",
     "fact_outage", "fact_service_metric", "fact_work_order", "fact_appointment",
     "fact_contact", "fact_offer", "fact_feedback",
@@ -146,6 +146,7 @@ def nb_03():
     date_cols = {
         "dim_account": ["open_date", "close_date"],
         "dim_customer": ["date_of_birth"],
+        "dim_customer_device": ["install_date"],
         "fact_subscription": ["start_date", "end_date"],
         "fact_invoice": ["period_start", "period_end", "due_date", "paid_date"],
         "fact_offer": ["presented_date"],

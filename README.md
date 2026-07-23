@@ -145,7 +145,7 @@ Each area has its own focused README:
 | 1 — Fabric data backend | Done | Lakehouse (bronze/silver/gold), synthetic data, trained churn model, `customer_360`, published Data Agent |
 | — Semantic model | Done (manual) | `TelcoCustomerService`, built in the portal from `model_spec.yaml` |
 | — Ontology (Fabric IQ) | Done (manual) | `TelcoOntology` — 11 entities, 10 relationships; second data agent over it |
-| — Real-Time Intelligence (Eventhouse/KQL) | Done | `telco_realtime` Eventhouse: `OutageEvents` + `WebSessions` (customer-keyed); generated + loaded by script. Ontology binding is manual (documented) |
+| — Real-Time Intelligence (Eventhouse/KQL) | Done | `telco_realtime` Eventhouse: `DeviceMetrics` (device telemetry — recommended real-time time-series feed) + `OutageEvents` + `WebSessions`; generated + loaded by script, live streamer for demos. Ontology binding is manual (documented) |
 | 2 — Azure / Foundry setup | Done | Reused an existing Foundry resource group + project; gpt-4.1; AI Search index; App Insights tracing |
 | 3 — Foundry agents | Done | 3 journey agents (gpt-4.1) with Fabric / AI Search / Bing tools; app-side routing (no orchestrator) |
 | 4 — Web app (Care Console) | Done | Local-CSV mode; live Fabric SQL 360 is a one-flag future |

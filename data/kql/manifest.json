@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-23T17:55:20.386017+00:00",
+  "generated_at": "2026-07-23T18:56:04.638235+00:00",
   "seed": 42,
   "as_of_date": "2026-06-30",
   "tables": {
@@ -116,6 +116,44 @@
         [
           "converted",
           "bool"
+        ]
+      ]
+    },
+    "DeviceMetrics": {
+      "file": "device_metrics.csv",
+      "rows": 27090,
+      "columns": [
+        [
+          "device_id",
+          "string"
+        ],
+        [
+          "account_id",
+          "string"
+        ],
+        [
+          "reading_time",
+          "datetime"
+        ],
+        [
+          "is_online",
+          "bool"
+        ],
+        [
+          "utilization_pct",
+          "real"
+        ],
+        [
+          "downstream_mbps",
+          "real"
+        ],
+        [
+          "upstream_mbps",
+          "real"
+        ],
+        [
+          "latency_ms",
+          "real"
         ]
       ]
     }

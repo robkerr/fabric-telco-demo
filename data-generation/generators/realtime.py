@@ -58,6 +58,19 @@ WEBSESSION_COLUMNS = [
     ("converted", "bool"),
 ]
 
+# Real-time device telemetry — the recommended real-time feed. Bound as a **time-series**
+# binding on the Device entity (key device_id, timestamp reading_time). Ontology-safe types.
+DEVICE_METRICS_COLUMNS = [
+    ("device_id", "string"),
+    ("account_id", "string"),
+    ("reading_time", "datetime"),
+    ("is_online", "bool"),
+    ("utilization_pct", "real"),
+    ("downstream_mbps", "real"),
+    ("upstream_mbps", "real"),
+    ("latency_ms", "real"),
+]
+
 _OUTAGE_TYPES = ["Fiber cut", "Power loss", "Equipment failure", "Weather", "Congestion"]
 _SEVERITY = {"Minor": 0.5, "Major": 0.35, "Critical": 0.15}
 _STATUS = ["Detected", "Investigating", "Restoring", "Resolved"]
@@ -223,3 +236,60 @@ def _pick(rng: np.random.Generator, mapping: dict) -> str:
     keys = list(mapping)
     p = np.array(list(mapping.values()), dtype=float)
     return str(rng.choice(keys, p=p / p.sum()))
+
+
+def generate_device_metrics(csv_dir: Path, as_of: datetime, rng: np.random.Generator,
+                            cfg: dict) -> pd.DataFrame:
+    """Per-device utilization / up-down telemetry over time (the real-time time-series feed).
+
+    Reads dim_customer_device (one physical device per internet account). Emits
+    `readings_per_day` readings/day for the last `metrics_window_days` days per device.
+    """
+    try:
+        dev = pd.read_csv(csv_dir / "dim_customer_device.csv",
+                          usecols=["device_id", "account_id", "device_type", "status"])
+    except Exception:  # noqa: BLE001
+        return pd.DataFrame(columns=[c for c, _ in DEVICE_METRICS_COLUMNS])
+
+    days = int(cfg.get("metrics_window_days", 30))
+    per_day = int(cfg.get("metrics_readings_per_day", 1))
+    # cable modems tend to sit lower/steadier; mesh routers a touch busier
+    base_by_type = {"modem": 45.0, "router": 55.0}
+
+    rows = []
+    for _, d in dev.iterrows():
+        if str(d["status"]) == "inactive":
+            continue
+        base = base_by_type.get(str(d["device_type"]), 50.0) + float(rng.normal(0, 8))
+        base = float(np.clip(base, 15, 80))
+        # a slice of devices are congested (trend upward) for demo signal
+        congested = rng.random() < 0.15
+        # a small chance of an outage window in the last week
+        outage_day = int(rng.integers(0, 7)) if rng.random() < 0.10 else -1
+        link_down = 300.0 if str(d["device_type"]) == "router" else 200.0  # provisioned Mbps
+        for day in range(days, 0, -1):
+            drift = (days - day) / days * 12.0 if congested else 0.0
+            for r in range(per_day):
+                frac_hour = 12 if per_day == 1 else int(24 * r / per_day)
+                ts = as_of - timedelta(days=day) + timedelta(hours=frac_hour)
+                daily = float(np.clip(base + drift + rng.normal(0, 9), 2, 99))
+                online = not (day <= 7 and (days - day) % 7 == outage_day and r == 0)
+                if not online:
+                    daily = 0.0
+                util = round(daily, 1)
+                down = 0.0 if not online else round(link_down * (0.6 + 0.4 * (util / 100.0))
+                                                    * float(rng.uniform(0.85, 1.0)), 1)
+                up = 0.0 if not online else round(down * float(rng.uniform(0.08, 0.15)), 1)
+                lat = 0.0 if not online else round(float(np.clip(
+                    12 + util * 0.6 + rng.normal(0, 5), 5, 250)), 1)
+                rows.append({
+                    "device_id": d["device_id"],
+                    "account_id": d["account_id"],
+                    "reading_time": _iso(ts),
+                    "is_online": bool(online),
+                    "utilization_pct": util,
+                    "downstream_mbps": down,
+                    "upstream_mbps": up,
+                    "latency_ms": lat,
+                })
+    return pd.DataFrame(rows, columns=[c for c, _ in DEVICE_METRICS_COLUMNS])

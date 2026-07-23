@@ -19,7 +19,7 @@
 [CmdletBinding()]
 param(
     [switch]$SkipIngest,
-    [int]$ChunkSize = 1000
+    [int]$ChunkSize = 5000
 )
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'lib\Common.psm1') -Force
@@ -42,8 +42,11 @@ $tables = [ordered]@{
         'duration_seconds:real', 'device_type:string', 'browser:string', 'os:string',
         'entry_page:string', 'exit_page:string', 'page_views:long', 'referrer:string',
         'authenticated:bool', 'converted:bool')
+    DeviceMetrics = @(
+        'device_id:string', 'account_id:string', 'reading_time:datetime', 'is_online:bool',
+        'utilization_pct:real', 'downstream_mbps:real', 'upstream_mbps:real', 'latency_ms:real')
 }
-$csvFor = @{ OutageEvents = 'outage_events.csv'; WebSessions = 'web_sessions.csv' }
+$csvFor = @{ OutageEvents = 'outage_events.csv'; WebSessions = 'web_sessions.csv'; DeviceMetrics = 'device_metrics.csv' }
 
 $fabricToken = Get-FabricToken -UseSpn
 
@@ -129,6 +132,9 @@ foreach ($t in $tables.Keys) {
 }
 
 Write-Host ''
-Write-Host "Eventhouse '$ehName' ready. Database '$dbName' has OutageEvents + WebSessions." -ForegroundColor Green
-Write-Host 'Next: in the Fabric IQ ontology, add OutageEvent / WebSession entity types bound to' -ForegroundColor Green
-Write-Host '      these KQL tables and relate them to Customer (see fabric/eventhouse/README.md).' -ForegroundColor Green
+Write-Host "Eventhouse '$ehName' ready. Database '$dbName' has:" -ForegroundColor Green
+Write-Host '  DeviceMetrics  (real-time device telemetry -> time-series binding on Device)' -ForegroundColor Green
+Write-Host '  OutageEvents / WebSessions' -ForegroundColor Green
+Write-Host 'Next: in the Fabric IQ ontology, add a Device entity (static from gold.dim_customer_device)' -ForegroundColor Green
+Write-Host '      + account_has_device, then bind DeviceMetrics as time-series on Device. See' -ForegroundColor Green
+Write-Host '      fabric/eventhouse/README.md.' -ForegroundColor Green

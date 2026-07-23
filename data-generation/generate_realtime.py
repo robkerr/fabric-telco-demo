@@ -38,6 +38,8 @@ CONFIG = {
     "session_customer_rate": 0.40,
     "session_window_days": 30,
     "session_max_per_customer": 8,
+    "metrics_window_days": 30,
+    "metrics_readings_per_day": 1,   # 1/day -> ~30k rows for 1000 devices; bump for finer series
 }
 
 
@@ -66,9 +68,11 @@ def main(argv=None) -> int:
 
     outages = realtime.generate_outage_events(csv_dir, as_of, rng, CONFIG)
     sessions = realtime.generate_web_sessions(csv_dir, as_of, rng, CONFIG)
+    metrics = realtime.generate_device_metrics(csv_dir, as_of, rng, CONFIG)
 
     outages.to_csv(kql_dir / "outage_events.csv", index=False)
     sessions.to_csv(kql_dir / "web_sessions.csv", index=False)
+    metrics.to_csv(kql_dir / "device_metrics.csv", index=False)
 
     manifest = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -79,12 +83,15 @@ def main(argv=None) -> int:
                              "columns": realtime.OUTAGE_COLUMNS},
             "WebSessions": {"file": "web_sessions.csv", "rows": int(len(sessions)),
                             "columns": realtime.WEBSESSION_COLUMNS},
+            "DeviceMetrics": {"file": "device_metrics.csv", "rows": int(len(metrics)),
+                              "columns": realtime.DEVICE_METRICS_COLUMNS},
         },
     }
     (kql_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
     print(f"  OutageEvents  {len(outages):>7,} rows -> {kql_dir/'outage_events.csv'}")
     print(f"  WebSessions   {len(sessions):>7,} rows -> {kql_dir/'web_sessions.csv'}")
+    print(f"  DeviceMetrics {len(metrics):>7,} rows -> {kql_dir/'device_metrics.csv'}")
     print(f"  manifest      -> {kql_dir/'manifest.json'}")
     return 0
 

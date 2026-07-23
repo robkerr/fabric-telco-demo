@@ -1,16 +1,65 @@
 # Real-Time Intelligence (Eventhouse / KQL)
 
-An **Eventhouse** (`telco_realtime`) with a KQL database holding **two customer-keyed real-time
-tables**. It complements the Lakehouse batch data with a real-time store the ontology can bind
-to, so the ontology-backed Data Agent can answer relationship questions over live-style data.
+An **Eventhouse** (`telco_realtime`) with a KQL database holding **real-time tables** the Fabric
+IQ ontology binds to, so the ontology-backed Data Agent can answer live questions.
 
-| Table | What | Keyed by |
-|---|---|---|
-| `OutageEvents` | Outage information experienced by a customer | `customer_id` |
-| `WebSessions` | Web browser session (clickstream summary) per customer | `customer_id` |
+| Table | What | Keyed by | Recommended ontology binding |
+|---|---|---|---|
+| **`DeviceMetrics`** ⭐ | Per-device utilization / up-down telemetry over time | `device_id`, `account_id` | **time-series** on a `Device` entity (real-time) |
+| `OutageEvents` | Outage information experienced by a customer | `customer_id`, `account_id` | entity or time-series (see below) |
+| `WebSessions` | Web browser session (clickstream summary) per customer | `customer_id` | entity or time-series |
 
-Both are keyed by `customer_id` (`CUST######`) from `data/csv/dim_customer.csv`, so they line up
-with the Lakehouse data. Event timestamps anchor to the dataset date **2026-06-30**.
+> **`DeviceMetrics` is the recommended real-time model.** It's designed for the *time-series
+> binding* — a live feed queried straight from KQL at query time (no graph refresh) — attached
+> to a stable **`Device`** entity. That combination is what makes the ontology Data Agent answer
+> real-time questions like *"plot utilization by day for the last month for account 123's cable
+> modem"* without confusion. See **[Recommended: Device + DeviceMetrics](#recommended-device--devicemetrics-real-time)**.
+
+Timestamps anchor to the dataset date **2026-06-30** (except live-streamed rows, which use `now()`).
+
+## Recommended: Device + DeviceMetrics (real-time)
+
+Two ontology bindings work together:
+
+1. **`Device` entity — static binding** to the gold Lakehouse table **`dim_customer_device`**
+   (one physical modem/router per internet account). This gives stable, traversable device
+   instances. Key = `device_id`. Relationship **`account_has_device`** (Account → Device,
+   mapping table `dim_customer_device`, `account_id → device_id`).
+2. **`DeviceMetrics` — time-series binding** on that same `Device` entity, from the Eventhouse
+   (`device_id` key, `reading_time` timestamp). The metric columns (`utilization_pct`,
+   `is_online`, `downstream_mbps`, `upstream_mbps`, `latency_ms`) become **live** time-series
+   properties — queried from KQL at query time, so new readings appear instantly.
+
+**Why this beats binding events straight onto Account:** a *static* entity binding is
+materialized into the graph and only refreshes on a graph refresh (batch). A *time-series*
+binding is **live-queried** — that's the only true real-time path, and it needs the `datetime`
+column. The `Device` entity gives the agent something clean to traverse to (`Account → Device`);
+the telemetry gives it live values to aggregate over time.
+
+### Agent guidance (paste into `TelcoOntologyDataAgent`)
+
+**AI instructions:**
+> Device telemetry (utilization, up/down state, throughput, latency) is real-time time-series
+> data on the **Device** entity, reached via `Account -[account_has_device]-> Device` (fed by the
+> DeviceMetrics Eventhouse table; timestamp = `reading_time`). For "utilization/usage/online/
+> latency/throughput over time" questions, aggregate these time-series properties by time window
+> (e.g., `bin(reading_time, 1d)`). Do NOT use WorkOrder (repair tickets) or Invoice for device or
+> connectivity questions.
+
+**Example queries** (the strongest steer — add these question→GQL pairs):
+- *"Plot utilization by day for the last month for account ACCT000193's cable modem"*
+- *"Is account ACCT000193's device online right now, and what's its current utilization?"*
+- *"What's the average latency for this account's device over the last 7 days?"*
+
+These are **time-window** questions — the shape time-series binding handles well.
+
+### Live real-time demo
+
+```powershell
+./scripts/stream_device_metrics.ps1 -AccountId ACCT000001 -IntervalSec 5 -Count 30
+```
+Streams fresh readings with `now()` timestamps. Then ask the agent *"what's the utilization for
+account ACCT000001 in the last 5 minutes?"* to see live data arrive.
 
 ## Table schemas
 
@@ -18,6 +67,21 @@ All column types are chosen to be **Fabric IQ ontology-binding compatible**:
 `string` (ids/categoricals), `datetime` (timestamps), `real` (continuous → ontology **Double**),
 `long` (counts), `bool` (flags). **No `decimal`** (ontology returns null for Decimal), no
 `dynamic`/`timespan`/`guid`.
+
+### `DeviceMetrics`  (real-time telemetry — time-series feed)
+| Column | KQL type | Notes |
+|---|---|---|
+| `device_id` | string | → Device (the time-series key) |
+| `account_id` | string | → Account (denormalized for filtering) |
+| `reading_time` | datetime | the time-series timestamp |
+| `is_online` | bool | up/down state |
+| `utilization_pct` | real | link utilization % |
+| `downstream_mbps` | real | |
+| `upstream_mbps` | real | |
+| `latency_ms` | real | |
+
+Backed by the gold dimension **`dim_customer_device`** (`device_id`, `account_id`, `customer_id`,
+`model`, `device_type` modem/router, `serial_number`, `install_date`, `status`, `firmware_version`).
 
 ### `OutageEvents`
 | Column | KQL type | Notes |
@@ -51,17 +115,24 @@ All column types are chosen to be **Fabric IQ ontology-binding compatible**:
 | `authenticated` | bool | signed in |
 | `converted` | bool | completed an action (paid bill / started chat / bought add-on) |
 
-## 1. Generate the data (local, reads the committed customers)
+## 1. Generate the data (local, reads the committed customers/devices)
 
 ```powershell
-# reads data/csv/dim_customer.csv (+ geography/outage/subscription) and writes data/kql/*.csv
-python ./data-generation/generate_realtime.py
-# optional: --seed 7  --as-of 2026-06-30
+# The Device dimension (dim_customer_device) is produced by the main generator:
+python ./data-generation/generate.py --customers 1000          # writes data/csv + data/parquet
+# Then the KQL feeds (reads dim_customer.csv, dim_customer_device.csv, ...):
+python ./data-generation/generate_realtime.py                  # optional: --seed 7 --as-of 2026-06-30
 ```
 
-Output: `data/kql/outage_events.csv`, `data/kql/web_sessions.csv`, `data/kql/manifest.json`
-(committed to the repo). Default volumes ≈ **380 outage rows** and **1,870 session rows** for the
-1000-customer sample. Volume knobs live in `generate_realtime.py` (`CONFIG`).
+Output: `data/kql/device_metrics.csv`, `outage_events.csv`, `web_sessions.csv`, `manifest.json`
+(committed). Default volumes ≈ **27,090 telemetry rows** (903 active devices × 30 days),
+**380 outage rows**, **1,870 session rows**. Volume knobs live in `generate_realtime.py`
+(`CONFIG`) — e.g. `metrics_readings_per_day` for a finer time series.
+
+> The **`Device` entity** binds to the gold Lakehouse table `dim_customer_device`, which flows
+> through the medallion notebooks (it's in `build_notebooks.py` `TABLES`). Re-run the Lakehouse
+> load (`10_provision_fabric.ps1` + `20_load_data.ps1`, or re-run notebooks 02–03 in Fabric) so
+> `gold.dim_customer_device` exists before you bind the Device entity.
 
 ## 2. Provision the Eventhouse + load the data
 
@@ -69,9 +140,10 @@ Output: `data/kql/outage_events.csv`, `data/kql/web_sessions.csv`, `data/kql/man
 ./scripts/30_provision_eventhouse.ps1        # -SkipIngest to only (re)create tables
 ```
 
-This creates (or reuses) the `telco_realtime` Eventhouse + KQL database, creates the two tables,
-and ingests the CSVs via chunked `.ingest inline`. It writes `KQL_DATABASE_NAME` and
-`KQL_QUERY_URI` to `.env`. Re-running clears + re-ingests (idempotent, no duplicates).
+This creates (or reuses) the `telco_realtime` Eventhouse + KQL database, creates the three tables
+(`DeviceMetrics`, `OutageEvents`, `WebSessions`), and ingests the CSVs via chunked `.ingest
+inline`. It writes `KQL_DATABASE_NAME` and `KQL_QUERY_URI` to `.env`. Re-running drops + recreates
++ re-ingests (idempotent, handles schema changes, no duplicates).
 
 > **Capacity note:** the Eventhouse needs the workspace's Fabric **capacity running**. If it's
 > paused you'll see `CapacityNotActive` — resume it (Azure portal or
